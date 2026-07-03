@@ -1,19 +1,24 @@
-import { EmptyState } from "@/components/empty-state";
-import { Container } from "@/components/ui/container";
+import { EmptyState } from "@/components/layout/empty-state";
+import { ProjectList } from "@/components/project/project-list";
+import type { Project } from "@/lib/types"
 
 export default function Dashboard() {
-  const project = []; 
+
+  const projects: Project[] = [
+    {
+      "id": "1",
+      "name": "TITLE",
+    }
+  ]; 
 
   return (
     <main>
-      <Container>
-      {project.length === 0 ? (
-       <EmptyState/> 
+      {projects.length === 0 ? (
+        <EmptyState /> 
       ):(
-        <div></div>
+        <ProjectList projects={projects} />
       )
-      }       
-      </Container>
+      }
     </main> 
   )
 } 
