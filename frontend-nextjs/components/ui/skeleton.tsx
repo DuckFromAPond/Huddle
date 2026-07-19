@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils"
 
+// "loading" component 
 function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div

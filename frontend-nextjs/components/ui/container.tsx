@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils"
 
+// general container set up 
 export function Container({ className, ...props }: React.ComponentProps<"div">) {
     return (
         <div

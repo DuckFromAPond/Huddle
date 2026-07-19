@@ -1,15 +1,33 @@
+"use client"
 
+// project page layout 
+import { ProjTitle } from "@/components/ui/typography";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import type { Project } from "@/lib/types";
+import { Container } from "@/components/ui/container";
 
 export default function ProjectLayout({
   children,
-  params,
 }: Readonly<{
-  children: React.ReactNode, 
-  params: string;
+  children: React.ReactNode,
 }>) {
-  return (
-    <main>
+  const {id} = useParams<{id:string}>(); 
+  const [project, setProject] = useState<Project | null>(null);
+  
+  // FIXME get proj from local storage (fix me don't extract data here)
+  useEffect(() => { 
+    const projects: Project[] = JSON.parse(localStorage.getItem("projects") ?? "[]");
+    const foundProj = projects.find((p) => p.id === id);
+    setProject(foundProj ?? null);
+  }, [id]);  
 
-    </main>
+  // TODO add a export button (export as JSON)
+
+  return (
+    <Container className="grid grid-cols-2 gap-2"> 
+      <ProjTitle>{project?.name ?? "Untitled Project"}</ProjTitle>
+      {children}
+    </Container>
   );
 }

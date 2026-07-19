@@ -11,14 +11,14 @@ import {
   ItemTitle,
 } from "@/components/ui/item"
 
-
+// for home page showing proj list 
 
 export function ProjectList({ projects } : { projects: Project[] }) {
   return (
-    <div className="flex w-full max-w-md flex-col gap-6">
-      <ItemGroup className="gap-4">
+    <div className="flex w-full flex-col gap-6">
+      <ItemGroup className="grid grid-cols-2 gap-4">
         {projects.map((proj) => (
-          <Item key={proj.name} variant="outline" role="listitem" render={<a href="#">
+          <Item className=" py-4" key={proj.name} variant="outline" role="listitem" render={<a href={`/projects/${proj.id}`}>
             <ItemMedia variant="image">
               <Image
                 src={placeholderIMG}
@@ -28,18 +28,16 @@ export function ProjectList({ projects } : { projects: Project[] }) {
                 className="object-cover grayscale"
               />
 
-              {/* REPLACE THIS IMAGE WITH LIKE A SELECT LIST OF ICONS OR SOMETHING */}
+            {/* TODO REPLACE THIS IMAGE WITH LIKE A SELECT LIST OF ICONS OR SOMETHING */}
             </ItemMedia>
             <ItemContent>
               <ItemTitle className="line-clamp-1">
-                {proj.name} -{" "}
-                {/* <span className="text-muted-foreground">{song.album}</span> */}
+                {proj.name}
               </ItemTitle>
-              {/* <ItemDescription>{song.artist}</ItemDescription> */}
+              <ItemDescription>{proj.desc}</ItemDescription>
             </ItemContent>
-            <ItemContent className="flex-none text-center">
-              {/* <ItemDescription>{song.duration}</ItemDescription> */}
-            </ItemContent></a>} />
+            </a>} 
+          />
         ))}
       </ItemGroup>
     </div>

@@ -1,5 +1,6 @@
 import { Container } from "@/components/ui/container";
 
+// blank state for when there is no project 
 export function EmptyState({className, ...props}: React.ComponentProps<typeof Container> ) {
     return ( 
         <Container className={className} {...props}>

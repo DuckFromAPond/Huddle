@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   description: "Temporary self hosted project collab app",
 };
 
+// TODO add a create button and a dark/light mode toggle 
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,7 +37,7 @@ export default function RootLayout({
           <AppSidebar />
           <SidebarInset>
           <main className="flex-1">
-            <SidebarTrigger />
+            <SidebarTrigger className="m-1.5"/>
             {children}
           </main>
           </SidebarInset>
