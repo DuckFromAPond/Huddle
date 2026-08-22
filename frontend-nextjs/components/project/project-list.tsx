@@ -18,7 +18,7 @@ export function ProjectList({ projects } : { projects: Project[] }) {
     <div className="flex w-full flex-col gap-6">
       <ItemGroup className="grid grid-cols-2 gap-4">
         {projects.map((proj) => (
-          <Item className=" py-4" key={proj.name} variant="outline" role="listitem" render={<a href={`/projects/${proj.id}`}>
+          <Item className=" py-4" key={proj.id} variant="outline" role="listitem" render={<a href={`/projects/${proj.id}`}>
             <ItemMedia variant="image">
               <Image
                 src={placeholderIMG}

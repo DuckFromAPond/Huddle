@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/layout/app-sidebar";
+import { Topbar } from "@/components/ui/topbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
   description: "Temporary self hosted project collab app",
 };
 
-// TODO add a create button and a dark/light mode toggle 
+// TODO add a dark/light mode toggle 
 
 export default function RootLayout({
   children,
@@ -36,10 +37,10 @@ export default function RootLayout({
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset>
-          <main className="flex-1">
-            <SidebarTrigger className="m-1.5"/>
-            {children}
-          </main>
+            <Topbar/>
+            <main className="flex-1">
+              {children}
+            </main>
           </SidebarInset>
         </SidebarProvider>
       </body>

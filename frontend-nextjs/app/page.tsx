@@ -4,7 +4,9 @@ import { EmptyState } from "@/components/layout/empty-state";
 import { ProjectList } from "@/components/project/project-list";
 import { ProjTitle } from "@/components/ui/typography"; 
 import { Container } from "@/components/ui/container";
+import { ProjectListSkeleton } from "@/components/project/project-skeleton";
 import { useEffect, useState } from "react"; 
+import { getAllProjs } from "@/lib/projects";
 
 // type def for proj
 import type { Project } from "@/lib/types"
@@ -12,14 +14,19 @@ import type { Project } from "@/lib/types"
 // dashboard for showing proj list 
 export default function Dashboard() {
   // proj state 
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<Project[] | null>(null);
 
-  // FIXME get proj from local storage (fix me don't extract data here)
+  // get from storage 
   useEffect(() => { 
-    const stored: Project[] = JSON.parse(localStorage.getItem("projects") ?? "[]");
-    setProjects(stored);
+    setProjects(getAllProjs());
   }, []);
-  
+
+  if (projects === null) {
+    return (
+      <ProjectListSkeleton />
+    );
+  }
+
   return (
     <main>
       {projects.length === 0 ? (
