@@ -26,7 +26,7 @@ const projects = [
 // TODO polish + add data/detail
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar {...props}>
+    <Sidebar variant="floating" {...props}>
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-1"> 
           <a href="/" className="flex items-center gap-2">
