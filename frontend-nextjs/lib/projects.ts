@@ -7,11 +7,30 @@ function getAllProjs() : Project[] {
 }
 
 // create the local storage 
-function createProj(project:Project) : void { 
+function createProj(name: string, desc: string = "") : Project { 
+    // dummy proj 
+    const project: Project = {
+        id: crypto.randomUUID(),
+        name,
+        desc,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        lastOpenedAt: Date.now(),
+        board: {
+            schemaVersion: 1,
+            columns: [
+                { id: crypto.randomUUID(), title: "Todo", cards: [] },
+                { id: crypto.randomUUID(), title: "In Progress", cards: [] },
+                { id: crypto.randomUUID(), title: "Done", cards: [] },
+            ],
+        },
+    }
+
     // add new 
     const projects = getAllProjs(); 
     projects.push(project); 
     updateProj(projects); 
+    return project;
 }
 
 // update project (for adding, deleting & changing projects)
@@ -30,4 +49,21 @@ function getProjByID(id:string): Project | null {
     return getAllProjs().find((proj) => proj.id === id) ?? null;
 }
 
-export {getAllProjs, createProj, getProjByID, deleteProj}; 
+// mark a project as opened (updates lastOpenedAt for recency sorting)
+function markProjOpened(id: string): void {
+    const projects = getAllProjs();
+    const updated = projects.map((proj) =>
+        proj.id === id ? { ...proj, lastOpenedAt: Date.now() } : proj
+    );
+    updateProj(updated);
+}
+
+// get the most recently opened projects
+function getRecentProjs(limit = 5): Project[] {
+    return getAllProjs()
+        .filter((proj) => proj.lastOpenedAt !== undefined)
+        .sort((a, b) => (b.lastOpenedAt ?? 0) - (a.lastOpenedAt ?? 0))
+        .slice(0, limit);
+}
+
+export { getAllProjs, createProj, getProjByID, deleteProj, markProjOpened, getRecentProjs };
