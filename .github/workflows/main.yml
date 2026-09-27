@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  lint:
+  frontend:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,14 +15,18 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: frontend-nextjs/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
         working-directory: frontend-nextjs
 
       - name: Run ESLint
         run: npm run lint
+        working-directory: frontend-nextjs
+
+      - name: Typecheck
+        run: npx tsc --noEmit
         working-directory: frontend-nextjs
