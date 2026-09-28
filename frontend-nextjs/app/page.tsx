@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+// import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { EmptyState } from "@/components/layout/empty-state"
 import { ProjectList } from "@/components/project/project-list"
@@ -8,17 +8,14 @@ import { ProjTitle } from "@/components/ui/typography"
 import { Container } from "@/components/ui/container"
 import { Button } from "@/components/ui/button"
 import { ProjectListSkeleton } from "@/components/project/project-skeleton"
-import { createProj, getAllProjs, projectPath } from "@/lib/projects"
-import type { Project } from "@/lib/types"
+import { createProj, projectPath } from "@/lib/projects"
+// import type { Project } from "@/lib/types"
+import { useProjects } from "@/hooks/use-projects"
 
 // dashboard for showing proj list
 export default function Dashboard() {
   const router = useRouter()
-  const [projects, setProjects] = useState<Project[] | null>(null)
-  // get from storage
-  useEffect(() => {
-    setProjects(getAllProjs())
-  }, [])
+  const projects = useProjects() // null = not loaded yet
 
   function handleCreate() {
     const newProj = createProj("Untitled project")

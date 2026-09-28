@@ -6,7 +6,7 @@ export default function NotFound() {
     return ( 
         <Container className="flex m-auto flex-col pt-36 items-center justify-center gap-2">
             <Title className="text-2xl font-semibold">404: Project not found</Title>
-            <Text className="text-muted-foreground">This project doesn't exist or the link is broken.</Text>
+            <Text className="text-muted-foreground">This project doesn&apos;t exist or the link is broken.</Text>
         </Container>
     )
 }
