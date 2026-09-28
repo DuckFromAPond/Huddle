@@ -1,11 +1,28 @@
-import { Container } from "@/components/ui/container";
+import { Container } from "@/components/ui/container"
+import { cn } from "@/lib/utils"
 
-// blank state for when there is no project 
-export function EmptyState({className, ...props}: React.ComponentProps<typeof Container> ) {
-    return ( 
-        <Container className={className} {...props}>
-            <h1> No projects found </h1>
-            <h3> You can add new projects by using "+ create"</h3>
-        </Container>
-    )
+type EmptyStateProps = React.ComponentProps<typeof Container> & {
+  title: string
+  description?: string
+  action?: React.ReactNode
+}
+
+// blank state for when a list has nothing in it
+export function EmptyState({
+  title,
+  description,
+  action,
+  className,
+  ...props
+}: EmptyStateProps) {
+  return (
+    <Container
+      className={cn("flex flex-col items-center gap-2 py-16 text-center", className)}
+      {...props}
+    >
+      <h1>{title}</h1>
+      {description && <p>{description}</p>}
+      {action && <div className="mt-2">{action}</div>}
+    </Container>
+  )
 }

@@ -1,43 +1,48 @@
-"use client";
+"use client"
 
-import { EmptyState } from "@/components/layout/empty-state";
-import { ProjectList } from "@/components/project/project-list";
-import { ProjTitle } from "@/components/ui/typography"; 
-import { Container } from "@/components/ui/container";
-import { ProjectListSkeleton } from "@/components/project/project-skeleton";
-import { useEffect, useState } from "react"; 
-import { getAllProjs } from "@/lib/projects";
-
-// type def for proj
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { EmptyState } from "@/components/layout/empty-state"
+import { ProjectList } from "@/components/project/project-list"
+import { ProjTitle } from "@/components/ui/typography"
+import { Container } from "@/components/ui/container"
+import { Button } from "@/components/ui/button"
+import { ProjectListSkeleton } from "@/components/project/project-skeleton"
+import { createProj, getAllProjs, projectPath } from "@/lib/projects"
 import type { Project } from "@/lib/types"
 
-// dashboard for showing proj list 
+// dashboard for showing proj list
 export default function Dashboard() {
-  // proj state 
-  const [projects, setProjects] = useState<Project[] | null>(null);
+  const router = useRouter()
+  const [projects, setProjects] = useState<Project[] | null>(null)
+  // get from storage
+  useEffect(() => {
+    setProjects(getAllProjs())
+  }, [])
 
-  // get from storage 
-  useEffect(() => { 
-    setProjects(getAllProjs());
-  }, []);
+  function handleCreate() {
+    const newProj = createProj("Untitled project")
+    router.push(`${projectPath(newProj)}/summary`)
+  }
 
   if (projects === null) {
+    return <ProjectListSkeleton />
+  }
+
+  if (projects.length === 0) {
     return (
-      <ProjectListSkeleton />
-    );
+      <EmptyState
+        title="No projects yet"
+        description="Create your first project to get started."
+        action={<Button onClick={handleCreate}>New project</Button>}
+      />
+    )
   }
 
   return (
-    <main>
-      {projects.length === 0 ? (
-        <EmptyState /> 
-      ):(
-        <Container className="p-6 pt-2">
-          <ProjTitle className="text-2xl pb-4">Projects</ProjTitle>
-          <ProjectList projects={projects} />
-        </Container>
-      )
-      }
-    </main> 
+    <Container className="p-6 pt-2">
+      <ProjTitle className="text-2xl pb-4">Projects</ProjTitle>
+      <ProjectList projects={projects} />
+    </Container>
   )
-} 
+}

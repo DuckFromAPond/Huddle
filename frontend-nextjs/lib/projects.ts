@@ -66,4 +66,20 @@ function getRecentProjs(limit = 5): Project[] {
         .slice(0, limit);
 }
 
-export { getAllProjs, createProj, getProjByID, deleteProj, markProjOpened, getRecentProjs };
+// slugify to use for url instead using id for url
+function slugify(name: string): string {
+  return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "untitled"
+}
+
+function projectPath(proj: Project): string {
+  return `/projects/${slugify(proj.name)}-${proj.id.slice(0, 8)}`
+}
+
+// resolve from the URL segment: match on the id suffix, ignore the slug
+function getProjBySlug(slug: string): Project | null {
+  const shortId = slug.slice(-8)
+  return getAllProjs().find((p) => p.id.startsWith(shortId)) ?? null
+}
+
+
+export { getAllProjs, createProj, getProjByID, deleteProj, markProjOpened, getRecentProjs, projectPath, getProjBySlug };

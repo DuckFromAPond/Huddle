@@ -4,7 +4,7 @@ import "./globals.css";
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/layout/app-sidebar";
-import { Topbar } from "@/components/ui/topbar";
+import { Topbar } from "@/components/layout/topbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

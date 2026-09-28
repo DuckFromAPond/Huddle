@@ -8,19 +8,19 @@ export default async function ProjectPage({
 }) {
         
     // FIXME remove static data 
-    const projects: Project[] = [
-        {
-            "id": "1",
-            "name": "TITLE",
-            "desc": "PROJECT DESCRIPTION ",
-        }
-    ]; 
+    // const projects: Project[] = [
+    //     {
+    //         "id": "1",
+    //         "name": "TITLE",
+    //         "desc": "PROJECT DESCRIPTION ",
+    //     }
+    // ]; 
 
     const { id } = await params;
     // for when using actual data from loc 
     // const project = JSON.parse(localStorage.getItem(`project-${id}`) ?? "null");
 
-    const project = projects.find((p) => p.id === id);
+    // const project = projects.find((p) => p.id === id);
     
     return ( 
         <Container> 
