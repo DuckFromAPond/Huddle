@@ -23,7 +23,6 @@ function SearchBar({ className }: React.ComponentProps<"div">) {
   useEffect(() => {
     // clear search when empty 
     if (query.trim() === "") {
-      // setResults([])
       return
     }
     // uses a timeout to search perioodically after a change
