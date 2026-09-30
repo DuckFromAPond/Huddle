@@ -1,4 +1,4 @@
-name: Lint
+name: Lint & Typecheck
 
 on:
   push:
@@ -28,5 +28,7 @@ jobs:
         working-directory: frontend-nextjs
 
       - name: Typecheck
-        run: npx tsc --noEmit
+        run: |
+          npx next typegen
+          npx tsc --noEmit
         working-directory: frontend-nextjs
