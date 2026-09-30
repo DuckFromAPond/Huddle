@@ -8,6 +8,6 @@ export default async function ProjectPage({
     params: Promise<{ slug: string }>
 }) {
     const { slug } = await params
-    console.log(slug)
+    console.log(slug)           // FIXME remove later
     redirect(`/projects/${slug}/summary`)
 }

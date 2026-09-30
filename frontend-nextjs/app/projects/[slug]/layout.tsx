@@ -1,7 +1,7 @@
 "use client"
 
 // project page layout
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { getProjBySlug, markProjOpened } from "@/lib/projects"
@@ -10,7 +10,7 @@ import { ProjTitle } from "@/components/ui/typography"
 import { Container } from "@/components/ui/container"
 import { EmptyState } from "@/components/layout/empty-state"
 import { buttonVariants } from "@/components/ui/button"
-import type { Project } from "@/lib/types"
+import { useProjects } from "@/hooks/use-projects"
 
 export default function ProjectLayout({
   children,
@@ -19,13 +19,15 @@ export default function ProjectLayout({
 }>) {
   const { slug } = useParams<{ slug: string }>()
   // undefined = still loading, null = not found
-  const [project, setProject] = useState<Project | null | undefined>(undefined)
+  const projects = useProjects()
 
+  // undefined = loading, null = not found, object = found
+  const project = projects === null ? undefined : getProjBySlug(slug, projects)
+
+  const projectId = project?.id
   useEffect(() => {
-    const found = getProjBySlug(slug)
-    setProject(found ?? null)
-    if (found) markProjOpened(found.id)
-  }, [slug])
+    if (projectId) markProjOpened(projectId)
+  }, [projectId])
 
   // TODO add a export button (export as JSON)
 

@@ -76,9 +76,12 @@ function projectPath(proj: Project): string {
 }
 
 // resolve from the URL segment: match on the id suffix, ignore the slug
-function getProjBySlug(slug: string): Project | null {
+function getProjBySlug(
+  slug: string,
+  projects: Project[] = getAllProjs()
+): Project | null {
   const shortId = slug.slice(-8)
-  return getAllProjs().find((p) => p.id.startsWith(shortId)) ?? null
+  return projects.find((p) => p.id.startsWith(shortId)) ?? null
 }
 
 

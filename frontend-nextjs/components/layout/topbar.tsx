@@ -39,7 +39,7 @@ function Topbar({className}: React.ComponentProps<"header">) {
                 <SearchBar className="flex-1" />
                 <Button
                     onClick={handleCreate}
-                    className="ml-2 rounded-[14px] bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
+                    className="ml-2 rounded-[14px] bg-sidebar-primary cursor-pointer text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
                     >
                     <Plus className="size-4" />
                     <span className="hidden sm:inline">New project</span>
