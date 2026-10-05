@@ -9,7 +9,6 @@ import { Container } from "@/components/ui/container"
 import { Button } from "@/components/ui/button"
 import { ProjectListSkeleton } from "@/components/project/project-skeleton"
 import { createProj, projectPath } from "@/lib/projects"
-// import type { Project } from "@/lib/types"
 import { useProjects } from "@/hooks/use-projects"
 
 // dashboard for showing proj list
@@ -37,7 +36,7 @@ export default function Dashboard() {
   }
 
   return (
-    <Container className="p-6 pt-2">
+    <Container className="p-6 pt-4">
       <ProjTitle className="text-2xl pb-4">Projects</ProjTitle>
       <ProjectList projects={projects} />
     </Container>

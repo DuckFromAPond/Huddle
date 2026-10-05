@@ -17,10 +17,10 @@ import {
 export function ProjectList({ projects }: { projects: Project[] }) {
   return (
     <div className="flex w-full flex-col gap-6">
-      <ItemGroup className="grid grid-cols-2 gap-4">
+      <ItemGroup className="grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] gap-4">
         {projects.map((proj) => (
           <Item
-            className="py-4"
+            className="py-4 bg-card transition-colors hover:bg-muted"
             key={proj.id}
             variant="outline"
             role="listitem"

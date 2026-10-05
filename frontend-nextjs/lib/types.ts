@@ -13,7 +13,6 @@ export type KanbanColumn = {
 }
 
 export type KanbanBoard = {
-  schemaVersion: number
   columns: KanbanColumn[]
 }
 
@@ -23,7 +22,8 @@ export type Project = {
   name: string           // name of proj 
   desc?: string
   createdAt: number       // default on create 
-  updatedAt: number       // last time content (board, etc.) actually changed
+  updatedAt: number       // last time content actually changed
   lastOpenedAt?: number    // last time user navigated in for "Recent"
-  board?: KanbanBoard       // your kanban data — shape depends on what you already locked in (columns, fractional-index, etc.)
+  board?: KanbanBoard       // kanban data 
+  schemaVersion: number    
 }

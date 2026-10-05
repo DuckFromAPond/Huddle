@@ -1,6 +1,8 @@
 //TODO local storage CRUD 
 import type { Project } from "./types";
 
+const schemaVersion = 1;
+
 // get all project 
 function getAllProjs() : Project[] { 
     return (JSON.parse(localStorage.getItem("projects") ?? "[]"));
@@ -17,13 +19,13 @@ function createProj(name: string, desc: string = "") : Project {
         updatedAt: Date.now(),
         lastOpenedAt: Date.now(),
         board: {
-            schemaVersion: 1,
             columns: [
                 { id: crypto.randomUUID(), title: "Todo", cards: [] },
                 { id: crypto.randomUUID(), title: "In Progress", cards: [] },
                 { id: crypto.randomUUID(), title: "Done", cards: [] },
             ],
         },
+        schemaVersion: schemaVersion,
     }
 
     // add new 

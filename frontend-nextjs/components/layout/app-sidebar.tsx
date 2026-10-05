@@ -33,7 +33,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
           {/* recent */}
           <div>
-            {/* FIXME template on click fx remove this later */}
             <div
               className={`flex items-center gap-2.5 pl-3 pr-2 py-2.5 rounded-[14px] text-sm ${
                 pathname === "/recent"
@@ -51,7 +50,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 variant="ghost"
                 size="icon-sm"
                 onClick={() => setRecentOpen((open) => !open)}
-                className="size-6 shrink-0 hover:bg-sidebar-foreground/10"
+                className="size-6 shrink-0 hover:bg-sidebar-foreground/10 cursor-pointer"
                 aria-label={recentOpen ? "Collapse recent" : "Expand recent"}
               >
                 <ChevronRight

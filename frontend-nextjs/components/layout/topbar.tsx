@@ -21,7 +21,7 @@ function Topbar({className}: React.ComponentProps<"header">) {
 
     return ( 
         <header className={cn(
-            "sticky top-0 z-20 grid grid-cols-[1fr_minmax(0,28rem)_1fr] items-center gap-2 border-b bg-background p-2 h-[var(--topbar-height)]",
+            "sticky top-0 z-20 grid grid-cols-[1fr_minmax(0,28rem)_1fr] items-center gap-2 border-b bg-sidebar p-2 h-[var(--topbar-height)]",
             className
         )}> 
             <div className="flex items-center">

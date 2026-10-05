@@ -1,8 +1,8 @@
-import type { Project } from "@/lib/types";
+// import type { Project } from "@/lib/types";
 import { Container } from "@/components/ui/container";
 
 export default async function ProjectPage({
-    params,
+    // params,
 }: {
     params: Promise<{ id: string }>;
 }) {
@@ -16,7 +16,7 @@ export default async function ProjectPage({
     //     }
     // ]; 
 
-    const { id } = await params;
+    // const { id } = await params;
     // for when using actual data from loc 
     // const project = JSON.parse(localStorage.getItem(`project-${id}`) ?? "null");
 
