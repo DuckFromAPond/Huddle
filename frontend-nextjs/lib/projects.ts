@@ -1,11 +1,16 @@
-//TODO local storage CRUD 
+// local storage: LOGIC for SAVING edits
 import type { Project } from "./types";
 
 const schemaVersion = 1;
 
 // get all project 
 function getAllProjs() : Project[] { 
-    return (JSON.parse(localStorage.getItem("projects") ?? "[]"));
+    try { 
+        const parsed = JSON.parse(localStorage.getItem("projects") ?? "[]")
+        return Array.isArray(parsed) ? parsed : []    }
+    catch {
+        return []
+    }
 }
 
 // create the local storage 
@@ -31,19 +36,19 @@ function createProj(name: string, desc: string = "") : Project {
     // add new 
     const projects = getAllProjs(); 
     projects.push(project); 
-    updateProj(projects); 
+    saveAllProjs(projects); 
     return project;
 }
 
-// update project (for adding, deleting & changing projects)
-function updateProj(project: Project[]): void { 
+// update projects list (when adding, deleting & changing projects - not the individual project itself) 
+function saveAllProjs(project: Project[]): void { 
     localStorage.setItem("projects", JSON.stringify(project)); 
 }
 
 function deleteProj(id: string) : void { 
     // get all proj except the giving proj 
     const projects = getAllProjs().filter((proj) => proj.id != id); 
-    updateProj(projects)
+    saveAllProjs(projects)
 }
 
 
@@ -57,7 +62,7 @@ function markProjOpened(id: string): void {
     const updated = projects.map((proj) =>
         proj.id === id ? { ...proj, lastOpenedAt: Date.now() } : proj
     );
-    updateProj(updated);
+    saveAllProjs(updated);
 }
 
 // get the most recently opened projects
@@ -78,13 +83,31 @@ function projectPath(proj: Project): string {
 }
 
 // resolve from the URL segment: match on the id suffix, ignore the slug
-function getProjBySlug(
-  slug: string,
-  projects: Project[] = getAllProjs()
-): Project | null {
+function getProjBySlug(slug: string,projects: Project[] = getAllProjs()): Project | null {
   const shortId = slug.slice(-8)
   return projects.find((p) => p.id.startsWith(shortId)) ?? null
 }
 
+// SAVE PROJ DETAILS
+function saveProj(proj: Project): void {
+    const projects = getAllProjs();
 
-export { getAllProjs, createProj, getProjByID, deleteProj, markProjOpened, getRecentProjs, projectPath, getProjBySlug };
+    // check for existence before saving
+    const exists = projects.some((p) => p.id === proj.id);
+    if (!exists) {
+        throw new Error(`Cannot save project: no project with id ${proj.id}`);
+    }
+    
+    // save mutations to new 
+    const updated = { ...proj, updatedAt: Date.now() }
+    
+    // update proj with new proj detail
+    const newProjList = projects.map((p) => (
+        p.id === proj.id ? updated : p
+    ));
+
+    saveAllProjs(newProjList);
+}
+
+
+export { getAllProjs, createProj, getProjByID, deleteProj, markProjOpened, getRecentProjs, projectPath, getProjBySlug, saveProj };
