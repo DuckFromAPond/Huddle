@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-typecheck:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-nextjs
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend-nextjs/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: |
+          npx next typegen
+          npx tsc --noEmit
+
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-nextjs
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend-nextjs/package-lock.json
+      - run: npm ci
+      # Only keep if tests use a real browser:
+      # - run: npx playwright install --with-deps chromium
+      - run: npx vitest run
