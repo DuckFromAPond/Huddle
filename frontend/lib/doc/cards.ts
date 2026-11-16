@@ -5,6 +5,8 @@ import { generateKeyBetween } from "fractional-indexing";
 export const STATUSES = ["todo", "in-progress", "done"] as const;       // in other word, this is just the column (or col name)
 export type Status = (typeof STATUSES)[number];
 
+/**  expected shape of the card but not how it is stored in reality; 
+ * card does not have id in its maps, but the parent's map uses the id to get the card */
 export interface Card {
     id: string;
     title: string;
@@ -30,7 +32,7 @@ function compareStrings(a: string, b: string): number {
     return a < b ? -1 : a > b ? 1 : 0;
 }
 
-/** Same order on every peer: by order key, then by card id as the tiebreak. */
+/** Same order on every user: by order key, then by card id as the tiebreak. */
 function compareCards(a: Card, b: Card): number {
     return compareStrings(a.order, b.order) || compareStrings(a.id, b.id);
 }
@@ -39,9 +41,11 @@ function compareCards(a: Card, b: Card): number {
 function readCard(id: string, card: Y.Map<unknown>): Card {
     const description = card.get("description");
     const status = card.get("status");
+    const title = card.get("title");
+    
     return {
         id,
-        title: String(card.get("title") ?? ""),
+        title: typeof title === "string" ? title : "",
         description: description instanceof Y.Text ? description.toString() : "",
         status: isStatus(status) ? status : "todo", // tolerate bad data from a peer
         order: String(card.get("order") ?? ""),
