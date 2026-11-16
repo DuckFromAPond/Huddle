@@ -1,1 +1,0 @@
-// TODO save the detail of curr proj 

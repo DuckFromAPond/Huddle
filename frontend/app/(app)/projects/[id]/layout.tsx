@@ -17,12 +17,12 @@ export default function ProjectLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const { slug } = useParams<{ slug: string }>()
+  const { id } = useParams<{ id: string }>()
   // undefined = still loading, null = not found
   const projects = useProjects()
 
   // undefined = loading, null = not found, object = found
-  const project = projects === null ? undefined : getProjBySlug(slug, projects)
+  const project = projects === null ? undefined : getProjBySlug(id, projects)
 
   const projectId = project?.id
   useEffect(() => {

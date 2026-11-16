@@ -5,9 +5,8 @@ import { redirect } from "next/navigation"
 export default async function ProjectPage({
     params,
 }: {
-    params: Promise<{ slug: string }>
+    params: Promise<{ id: string }>
 }) {
-    const { slug } = await params
-    console.log(slug)           // FIXME remove later
-    redirect(`/projects/${slug}/summary`)
+    const { id } = await params
+    redirect(`/projects/${id}/summary`)
 }

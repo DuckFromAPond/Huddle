@@ -44,8 +44,8 @@ function isSummary(value: unknown): value is ProjectSummary {
   );
 }
 
-function read(): ProjectSummary[] {
-  const raw = store()?.getItem(KEY);
+/** Parse the raw index string. */
+export function parseIndex(raw: string | null): ProjectSummary[] {
   if (!raw) return [];
 
   try {
@@ -55,6 +55,11 @@ function read(): ProjectSummary[] {
     return []; // a corrupt index is only a cache; the docs are the source of truth
   }
 }
+
+function read(): ProjectSummary[] {
+  return parseIndex(store()?.getItem(KEY) ?? null);
+}
+
 
 /** save the proj summary to localstorage (only the title, id and dates to compare - other data is stored in the indexedDB) */
 function write(projects: ProjectSummary[]): void {
