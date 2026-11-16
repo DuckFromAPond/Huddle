@@ -6,7 +6,7 @@ export function sync(a: Y.Doc, b: Y.Doc): void {
   // encode each state for syncing both doc
   const forB = Y.encodeStateAsUpdate(a, Y.encodeStateVector(b));
   const forA = Y.encodeStateAsUpdate(b, Y.encodeStateVector(a));
-  
+
   Y.applyUpdate(b, forB);
   Y.applyUpdate(a, forA);
 }
@@ -18,7 +18,7 @@ export function fork(doc: Y.Doc): Y.Doc {
   return copy;
 }
 
-/** Everything a user could see, as plain data, for comparing two peers. */
+/** Everything a user could see, as plain data, for comparing two user. (pretty much just get get cards from given doc) */
 export function snapshot(doc: Y.Doc) {
   return getCards(doc);
 }
