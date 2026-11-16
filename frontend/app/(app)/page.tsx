@@ -9,7 +9,7 @@ import { Container } from "@/components/ui/container"
 import { Button } from "@/components/ui/button"
 import { ProjectListSkeleton } from "@/components/project/project-skeleton"
 import { createProj, projectPath } from "@/lib/projects"
-import { useProjects } from "@/hooks/use-projects"
+import { useProjects } from "@/hooks/use-open-projects"
 
 // dashboard for showing proj list
 export default function Dashboard() {
