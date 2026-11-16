@@ -44,6 +44,5 @@ jobs:
           cache: npm
           cache-dependency-path: frontend-nextjs/package-lock.json
       - run: npm ci
-      # Only keep if tests use a real browser:
-      # - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium
       - run: npx vitest run
