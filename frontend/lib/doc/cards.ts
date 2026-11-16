@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { generateKeyBetween } from "fractional-indexing";
 
 export const STATUSES = ["todo", "in-progress", "done"] as const;       // in other word, this is just the column (or col name)
+
 export type Status = (typeof STATUSES)[number];
 
 /**  expected shape of the card but not how it is stored in reality; 

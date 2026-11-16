@@ -1,15 +1,28 @@
-// TODO read
-
 export interface ProjectSummary {
   id: string;
   title: string;
-  updatedAt: number; // ms since epoch, last time the CONTENT changed
-  lastOpenedAt?: number; // ms since epoch, last time the project was opened
+  updatedAt: number;      // in ms since epoch, last time the CONTENT changed
+  lastOpenedAt?: number;  // in ms since epoch, last time the project was opened
 }
 
 const KEY = "huddle:projects";
+const EVENT = "huddle:projects-changed";
 
-/** localStorage is missing on the server and can throw (private mode, quota). */
+export function getIndexSnapshot(): string {
+  return store()?.getItem(KEY) ?? "[]";
+}
+
+// for re-render when data is changed
+export function subscribeIndex(cb: () => void): () => void {
+  window.addEventListener(EVENT, cb);
+  window.addEventListener("storage", cb); // changes from other tabs
+  return () => {
+    window.removeEventListener(EVENT, cb);
+    window.removeEventListener("storage", cb);
+  };
+}
+
+/** localStorage is missing on the server then can throw */
 function store(): Storage | null {
   try {
     return typeof localStorage === "undefined" ? null : localStorage;
@@ -20,11 +33,13 @@ function store(): Storage | null {
 
 function isSummary(value: unknown): value is ProjectSummary {
   if (typeof value !== "object" || value === null) return false;
+
   const v = value as Record<string, unknown>;
+  // return true if all condition passed
   return (
     typeof v.id === "string" &&
     typeof v.title === "string" &&
-    typeof v.updatedAt === "number" &&
+    typeof v.updatedAt === "number" && 
     (v.lastOpenedAt === undefined || typeof v.lastOpenedAt === "number")
   );
 }
@@ -32,6 +47,7 @@ function isSummary(value: unknown): value is ProjectSummary {
 function read(): ProjectSummary[] {
   const raw = store()?.getItem(KEY);
   if (!raw) return [];
+
   try {
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed.filter(isSummary) : [];
@@ -40,9 +56,13 @@ function read(): ProjectSummary[] {
   }
 }
 
+/** save the proj summary to localstorage (only the title, id and dates to compare - other data is stored in the indexedDB) */
 function write(projects: ProjectSummary[]): void {
   try {
     store()?.setItem(KEY, JSON.stringify(projects));
+    if (typeof window !== "undefined") { 
+      window.dispatchEvent(new Event(EVENT))
+    }
   } catch {
     // Quota or blocked storage: the dashboard just shows a stale list.
   }
@@ -61,7 +81,10 @@ export function getProjectSummary(id: string): ProjectSummary | undefined {
 export function upsertProject(patch: Partial<ProjectSummary> & { id: string }): void {
   const all = read();
   const existing = all.find((p) => p.id === patch.id);
+  // combine existing and new patch to make a new merge entry
   const merged = { title: "", updatedAt: Date.now(), ...existing, ...patch };
+
+  // patch the new newly merge entry into the existing entry
   write([...all.filter((p) => p.id !== patch.id), merged]);
 }
 
