@@ -6,6 +6,7 @@ import {
   STATUSES,
   type Status,
 } from "@/lib/doc/cards";
+import { type Author } from "@/lib/doc/activity";
 
 export const SCHEMA_VERSION = 1;
 export const MAX_IMPORT_CARDS = 5000;
@@ -137,17 +138,24 @@ export function parseImport(raw: unknown): ExportedProject {
  * from the file's card sequence instead of trusted, because a malformed key
  * would make generateKeyBetween throw later.
  */
-export function applyImport(doc: Y.Doc, data: ExportedProject): void {
-  const sorted = [...data.cards].sort((a, b) => (a.order < b.order ? -1 : a.order > b.order ? 1 : 0));
-  
+export function applyImport(doc: Y.Doc, data: ExportedProject, by: Author): void {
   doc.transact(() => {
     initProject(doc, data.title);
-    
-    for (const card of sorted) {
-      const id = createCard(doc, { status: card.status, title: card.title });
-      if (card.description) { 
+
+    for (const card of data.cards) {           
+      const id = createCard(
+        doc,
+        {
+          status: card.status,
+          title: card.title,
+          order: card.order || undefined,      // reuse the exported key
+        },
+        by,
+        "imported",
+      );
+      if (card.description) {
         getDescription(doc, id)?.insert(0, card.description);
-      } 
+      }
     }
   });
 }

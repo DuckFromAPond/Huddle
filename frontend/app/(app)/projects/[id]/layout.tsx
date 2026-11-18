@@ -10,7 +10,7 @@ import { ProjTitle } from "@/components/ui/typography"
 import { Container } from "@/components/ui/container"
 import { EmptyState } from "@/components/layout/empty-state"
 import { buttonVariants } from "@/components/ui/button"
-import { useProjects } from "@/hooks/use-open-projects"
+import { useProjects } from "@/hooks/use-projects"
 
 export default function ProjectLayout({
   children,
