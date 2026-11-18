@@ -5,20 +5,21 @@ export type Author = { name: string; color: string };
 
 type Base = { by: Author & { clientId: number }; at: number };
 
-// all possible case a card could appear in the activity log as 
+// all possible case a card could appear in the activity log as
 export type CardEvent =
-| (Base & { type: "created" })
-| (Base & { type: "status"; from: Status; to: Status })
-| (Base & { type: "priority"; from: string; to: string })
-| (Base & { type: "renamed"; from: string; to: string })
-| (Base & { type: "comment"; text: string })
-| (Base & { type: "imported" });
+  | (Base & { type: "created" })
+  | (Base & { type: "status"; from: Status; to: Status })
+  | (Base & { type: "priority"; from: string; to: string })
+  | (Base & { type: "renamed"; from: string; to: string })
+  | (Base & { type: "comment"; text: string })
+  | (Base & { type: "imported" });
 
 //
 export type NewCardEvent = CardEvent extends infer E
-    ? E extends CardEvent
-        ? Omit<E, "by" | "at"> : never
-        : never;
+  ? E extends CardEvent
+    ? Omit<E, "by" | "at">
+    : never
+  : never;
 
 const MAX_EVENTS = 100;
 

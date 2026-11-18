@@ -1,8 +1,8 @@
-import Link from "next/link"
-import Image from "next/image"
-import placeholderIMG from "@/public/vercel.svg"
-import { projectPath } from "@/lib/projects"
-import type { Project } from "@/lib/types"
+import Link from "next/link";
+import Image from "next/image";
+import placeholderIMG from "@/public/vercel.svg";
+import { projectPath } from "@/lib/projects";
+import type { Project } from "@/lib/types";
 
 import {
   Item,
@@ -11,7 +11,7 @@ import {
   ItemGroup,
   ItemMedia,
   ItemTitle,
-} from "@/components/ui/item"
+} from "@/components/ui/item";
 
 // for home page showing proj list
 export function ProjectList({ projects }: { projects: Project[] }) {
@@ -46,5 +46,5 @@ export function ProjectList({ projects }: { projects: Project[] }) {
         ))}
       </ItemGroup>
     </div>
-  )
+  );
 }

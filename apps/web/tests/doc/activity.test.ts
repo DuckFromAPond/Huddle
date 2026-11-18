@@ -12,7 +12,11 @@ describe("card activity", () => {
     const id = createCard(doc, "Write docs", "todo", ada);
     moveCard(doc, id, "in_progress", ada);
     const card = doc.getMap<Y.Map<unknown>>("cards").get(id)!;
-    expect(getActivity(card).map((e) => e.type).sort()).toEqual(["created", "status"]);
+    expect(
+      getActivity(card)
+        .map((e) => e.type)
+        .sort(),
+    ).toEqual(["created", "status"]);
   });
 
   it("keeps both offline moves after merge", () => {

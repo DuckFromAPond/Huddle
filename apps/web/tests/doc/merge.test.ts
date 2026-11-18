@@ -75,9 +75,7 @@ describe("offline create", () => {
     sync(a, b);
 
     expect(new Set(keys).size).toBeLessThan(keys.length); // a tie really happened
-    expect(getCards(a, "todo").map((c) => c.id)).toEqual(
-      getCards(b, "todo").map((c) => c.id),
-    );
+    expect(getCards(a, "todo").map((c) => c.id)).toEqual(getCards(b, "todo").map((c) => c.id));
   });
 });
 

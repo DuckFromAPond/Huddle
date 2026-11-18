@@ -1,8 +1,8 @@
 export interface ProjectSummary {
   id: string;
   title: string;
-  updatedAt: number;      // in ms since epoch, last time the CONTENT changed
-  lastOpenedAt?: number;  // in ms since epoch, last time the project was opened
+  updatedAt: number; // in ms since epoch, last time the CONTENT changed
+  lastOpenedAt?: number; // in ms since epoch, last time the project was opened
 }
 
 const KEY = "huddle:projects";
@@ -39,7 +39,7 @@ function isSummary(value: unknown): value is ProjectSummary {
   return (
     typeof v.id === "string" &&
     typeof v.title === "string" &&
-    typeof v.updatedAt === "number" && 
+    typeof v.updatedAt === "number" &&
     (v.lastOpenedAt === undefined || typeof v.lastOpenedAt === "number")
   );
 }
@@ -60,13 +60,12 @@ function read(): ProjectSummary[] {
   return parseIndex(store()?.getItem(KEY) ?? null);
 }
 
-
 /** save the proj summary to localstorage (only the title, id and dates to compare - other data is stored in the indexedDB) */
 function write(projects: ProjectSummary[]): void {
   try {
     store()?.setItem(KEY, JSON.stringify(projects));
-    if (typeof window !== "undefined") { 
-      window.dispatchEvent(new Event(EVENT))
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event(EVENT));
     }
   } catch {
     // Quota or blocked storage: the dashboard just shows a stale list.

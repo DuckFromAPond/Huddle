@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "next/link";
 
 export function NavLink({
   title,
@@ -6,10 +6,10 @@ export function NavLink({
   icon: Icon,
   isActive,
 }: {
-  title: string
-  url: string
-  icon: React.ComponentType<{ className?: string }>
-  isActive: boolean
+  title: string;
+  url: string;
+  icon: React.ComponentType<{ className?: string }>;
+  isActive: boolean;
 }) {
   return (
     <Link
@@ -23,5 +23,5 @@ export function NavLink({
       <Icon className="size-4" />
       {title}
     </Link>
-  )
+  );
 }

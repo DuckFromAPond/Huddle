@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Topbar } from "@/components/layout/topbar";
 
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   description: "Temporary self hosted project collab app",
 };
 
-// TODO add a dark/light mode toggle 
+// TODO add a dark/light mode toggle
 
 export default function RootLayout({
   children,
@@ -29,19 +29,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <SidebarProvider className="flex flex-col flex-1">
           <Topbar />
           <div className="flex flex-1">
             <AppSidebar />
             <SidebarInset>
-              <main className="flex-1">
-                {children}
-              </main>
+              <main className="flex-1">{children}</main>
             </SidebarInset>
           </div>
         </SidebarProvider>

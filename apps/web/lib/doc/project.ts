@@ -1,11 +1,5 @@
 import * as Y from "yjs";
-import {
-  createCard,
-  getCards,
-  getDescription,
-  STATUSES,
-  type Status,
-} from "@/lib/doc/cards";
+import { createCard, getCards, getDescription, STATUSES, type Status } from "@/lib/doc/cards";
 import { type Author } from "@/lib/doc/activity";
 
 export const SCHEMA_VERSION = 1;
@@ -41,7 +35,6 @@ export function getProjectTitle(doc: Y.Doc): string | undefined {
 export function setProjectTitle(doc: Y.Doc, title: string): void {
   metaMap(doc).set("title", title);
 }
-
 
 // ---------- Export / import ----------
 
@@ -80,9 +73,7 @@ export function exportProject(doc: Y.Doc): ExportedProject {
 
 /** Raw doc contents, for debugging only. The stored format is binary and hard to inspect. */
 export function exportDebug(doc: Y.Doc): unknown {
-  return Object.fromEntries(
-    Array.from(doc.share, ([name, type]) => [name, type.toJSON()]),
-  );
+  return Object.fromEntries(Array.from(doc.share, ([name, type]) => [name, type.toJSON()]));
 }
 
 function isStatus(value: unknown): value is Status {
@@ -96,7 +87,7 @@ export function parseImport(raw: unknown): ExportedProject {
   }
 
   const data = raw as Record<string, unknown>;
-  if (data.app !== "huddle") { 
+  if (data.app !== "huddle") {
     throw new ImportError("Not a Huddle export.");
   }
 
@@ -104,7 +95,7 @@ export function parseImport(raw: unknown): ExportedProject {
     throw new ImportError("This export is from a newer version of Huddle.");
   }
 
-  if (!Array.isArray(data.cards)) { 
+  if (!Array.isArray(data.cards)) {
     throw new ImportError("The export has no cards list.");
   }
 
@@ -112,9 +103,9 @@ export function parseImport(raw: unknown): ExportedProject {
     throw new ImportError("Too many cards.");
   }
 
-  // read data into card 
+  // read data into card
   const cards: ExportedCard[] = data.cards.map((item: unknown) => {
-    const card = ((typeof item === "object" && item !== null) ? item : {}) as Record<string, unknown>;
+    const card = (typeof item === "object" && item !== null ? item : {}) as Record<string, unknown>;
 
     return {
       title: typeof card.title === "string" ? card.title : "",
@@ -127,7 +118,7 @@ export function parseImport(raw: unknown): ExportedProject {
   return {
     app: "huddle",
     schemaVersion: data.schemaVersion,
-    title: (typeof data.title === "string" && data.title.trim()) ? data.title : "Imported project",
+    title: typeof data.title === "string" && data.title.trim() ? data.title : "Imported project",
     exportedAt: typeof data.exportedAt === "string" ? data.exportedAt : "",
     cards,
   };
@@ -142,13 +133,13 @@ export function applyImport(doc: Y.Doc, data: ExportedProject, by: Author): void
   doc.transact(() => {
     initProject(doc, data.title);
 
-    for (const card of data.cards) {           
+    for (const card of data.cards) {
       const id = createCard(
         doc,
         {
           status: card.status,
           title: card.title,
-          order: card.order || undefined,      // reuse the exported key
+          order: card.order || undefined, // reuse the exported key
         },
         by,
         "imported",
