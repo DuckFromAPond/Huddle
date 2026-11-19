@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 type EmptyStateProps = React.ComponentProps<typeof Container> & {
   title: string;
   description?: string;
+  // opional additionally children of an empty state component
   action?: React.ReactNode;
 };
 

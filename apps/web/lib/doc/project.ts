@@ -1,6 +1,6 @@
 import * as Y from "yjs";
 import { createCard, getCards, getDescription, STATUSES, type Status } from "@/lib/doc/cards";
-import { type Author } from "@/lib/doc/activity";
+import type { Author } from "@/lib/doc/activity";
 
 export const SCHEMA_VERSION = 1;
 export const MAX_IMPORT_CARDS = 5000;

@@ -15,6 +15,7 @@ import {
   removeProject,
   upsertProject,
 } from "@/lib/storage/project-index";
+import type { Author } from "@/lib/doc/activity";
 
 // BROWSER ONLY. Call these from client components (inside useEffect), never during
 // server rendering: IndexedDB does not exist on the server.
@@ -142,7 +143,11 @@ export async function createProject(title: string, options?: OpenOptions): Promi
  * Accepts the raw file text or an already-parsed value.
  * parse JSON -> parseImport -> applyImport -> new proj
  */
-export async function importProject(input: unknown, options?: OpenOptions): Promise<OpenProject> {
+export async function importProject(
+  input: unknown,
+  by: Author,
+  options?: OpenOptions,
+): Promise<OpenProject> {
   let raw = input;
 
   if (typeof input === "string") {
@@ -157,7 +162,7 @@ export async function importProject(input: unknown, options?: OpenOptions): Prom
 
   // start a new proj & apply import
   const project = await openProject(nanoid(), options);
-  applyImport(project.doc, data);
+  applyImport(project.doc, data, by);
 
   // write changes & updates
   project.flushIndex();
