@@ -1,36 +1,59 @@
 "use client";
+
 import { useEffect, useState } from "react";
-import { openProject, type OpenProject } from "@/lib/storage/projects";
+import { deleteProject, openProject, type OpenProject } from "@/lib/storage/projects";
 
-type State =
-  { status: "loading" } | { status: "not-found" } | { status: "ready"; project: OpenProject };
+export type OpenProjectState =
+  | { status: "loading" }
+  | { status: "not-found" }
+  | { status: "error" }
+  | { status: "ready"; project: OpenProject };
 
-export function useOpenProject(id: string): State {
-  const [state, setState] = useState<State>({ status: "loading" });
+const LOADING: OpenProjectState = { status: "loading" };
 
-  // re-render when another proj is requested to open
+/**
+ * The ONLY place that opens a project for the UI.
+ * Waits for IndexedDB, then reports loading -> ready | not-found | error,
+ * and always closes the project when the id changes or the component unmounts.
+ */
+export function useOpenProject(id: string): OpenProjectState {
+  // the result remembers which id it belongs to, so a new id reads as "loading"
+  // without calling setState synchronously inside the effect
+  const [result, setResult] = useState<{ id: string; state: OpenProjectState } | null>(null);
+
   useEffect(() => {
-    let cancelled = false;
-    let opened: OpenProject | undefined;
+    let cancelled = false; // strict mode runs effects twice; the first run must not win
+    let project: OpenProject | undefined;
 
-    openProject(id).then((proj) => {
-      if (cancelled) {
-        // effect already cleaned up
-        proj.close();
-        return;
-      }
+    openProject(id)
+      .then(async (opened) => {
+        if (cancelled) {
+          await opened.close();
+          return;
+        }
 
-      // set state to the opened proj
-      opened = proj;
-      setState(proj.existedLocally ? { status: "ready", project: proj } : { status: "not-found" });
-    });
+        if (!opened.existedLocally) {
+          // no local copy: close and remove the empty database openProject just created.
+          // (When the relay exists, a joiner waits for the first sync here instead.)
+          await opened.close();
+          await deleteProject(id);
+          if (!cancelled) setResult({ id, state: { status: "not-found" } });
+          return;
+        }
 
-    // clean when proj changed or unmounted
+        project = opened;
+        setResult({ id, state: { status: "ready", project: opened } });
+      })
+      .catch(() => {
+        // e.g. IndexedDB blocked (some private-browsing modes)
+        if (!cancelled) setResult({ id, state: { status: "error" } });
+      });
+
     return () => {
       cancelled = true;
-      opened?.close();
+      void project?.close();
     };
   }, [id]);
 
-  return state;
+  return result?.id === id ? result.state : LOADING;
 }

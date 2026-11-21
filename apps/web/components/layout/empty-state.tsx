@@ -1,6 +1,6 @@
 import { Container } from "@/components/ui/container";
 import { cn } from "@/lib/utils";
-
+import { Heading } from "@/components/ui/typography";
 type EmptyStateProps = React.ComponentProps<typeof Container> & {
   title: string;
   description?: string;
@@ -15,7 +15,7 @@ export function EmptyState({ title, description, action, className, ...props }: 
       className={cn("flex flex-col items-center gap-2 py-16 text-center", className)}
       {...props}
     >
-      <h1>{title}</h1>
+      <Heading as="h1">{title}</Heading>
       {description && <p>{description}</p>}
       {action && <div className="mt-2">{action}</div>}
     </Container>

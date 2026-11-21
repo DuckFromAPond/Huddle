@@ -1,6 +1,11 @@
 import * as Y from "yjs";
 import { getCards } from "@/lib/doc/cards";
 
+import type { Author } from "@/lib/doc/activity";
+
+export const ada: Author = { name: "Ada", color: "#82aae2" };
+export const kim: Author = { name: "Kim", color: "#5dcaa5" };
+
 /** Standard exchange: each side sends what the other is missing. */
 export function sync(a: Y.Doc, b: Y.Doc): void {
   // encode each state for syncing both doc

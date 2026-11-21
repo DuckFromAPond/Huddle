@@ -1,8 +1,11 @@
+import type { Status } from "@/lib/doc/cards";
+
 export interface ProjectSummary {
   id: string;
   title: string;
   updatedAt: number; // in ms since epoch, last time the CONTENT changed
   lastOpenedAt?: number; // in ms since epoch, last time the project was opened
+  counts?: Partial<Record<Status, number>>;
 }
 
 const KEY = "huddle:projects";
@@ -40,7 +43,11 @@ function isSummary(value: unknown): value is ProjectSummary {
     typeof v.id === "string" &&
     typeof v.title === "string" &&
     typeof v.updatedAt === "number" &&
-    (v.lastOpenedAt === undefined || typeof v.lastOpenedAt === "number")
+    (v.lastOpenedAt === undefined || typeof v.lastOpenedAt === "number") &&
+    (v.counts === undefined ||
+      (typeof v.counts === "object" &&
+        v.counts !== null &&
+        Object.values(v.counts).every((n) => typeof n === "number")))
   );
 }
 

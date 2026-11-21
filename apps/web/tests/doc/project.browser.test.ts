@@ -1,5 +1,3 @@
-// TODO READ
-
 import { beforeEach, describe, expect, it } from "vitest";
 import { createCard, getCards, getDescription, orderForIndex, STATUSES } from "@/lib/doc/cards";
 import { exportProject, ImportError, isInitialized, setProjectTitle } from "@/lib/doc/project";
@@ -11,6 +9,7 @@ import {
   upsertProject,
 } from "@/lib/storage/project-index";
 import { createProject, deleteProject, importProject, openProject } from "@/lib/storage/projects";
+import { ada } from "@/tests/helpers";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const fast = { indexDebounceMs: 0 };
@@ -22,8 +21,8 @@ beforeEach(() => {
 describe("persistence", () => {
   it("keeps cards and the title after closing and reopening", async () => {
     const created = await createProject("My board", fast);
-    createCard(created.doc, { status: "todo", title: "Persist me" });
-    createCard(created.doc, { status: "done", title: "Already done" });
+    createCard(created.doc, { status: "todo", title: "Persist me" }, ada);
+    createCard(created.doc, { status: "done", title: "Already done" }, ada);
     await created.close();
 
     const reopened = await openProject(created.id, fast);
@@ -38,7 +37,7 @@ describe("persistence", () => {
 
   it("keeps description text", async () => {
     const created = await createProject("Notes", fast);
-    const id = createCard(created.doc, { status: "todo", title: "x" });
+    const id = createCard(created.doc, { status: "todo", title: "x" }, ada);
     getDescription(created.doc, id)!.insert(0, "remember this");
     await created.close();
 
@@ -86,7 +85,7 @@ describe("dashboard index", () => {
 
     await wait(20);
     const edited = await openProject(created.id, fast);
-    createCard(edited.doc, { status: "todo", title: "a change" });
+    createCard(edited.doc, { status: "todo", title: "a change" }, ada);
     await edited.close();
     expect(getProjectSummary(created.id)!.updatedAt).toBeGreaterThan(t1);
   });
@@ -111,7 +110,7 @@ describe("dashboard index", () => {
     await wait(5);
 
     const again = await openProject(a.id, fast); // opening A makes it the most recent
-    createCard(again.doc, { status: "todo", title: "an edit" });
+    createCard(again.doc, { status: "todo", title: "an edit" }, ada);
     await again.close(); // the edit rewrites the index entry
 
     expect(listRecentProjects().map((p) => p.title)).toEqual(["A", "B"]);
@@ -146,7 +145,7 @@ describe("dashboard index", () => {
 describe("delete", () => {
   it("removes the project from the index and from IndexedDB", async () => {
     const created = await createProject("Doomed", fast);
-    createCard(created.doc, { status: "todo", title: "gone soon" });
+    createCard(created.doc, { status: "todo", title: "gone soon" }, ada);
     await created.close();
 
     await deleteProject(created.id);
@@ -162,9 +161,9 @@ describe("delete", () => {
 describe("export and import", () => {
   async function sampleProject() {
     const project = await createProject("Original", fast);
-    createCard(project.doc, { status: "todo", title: "one" });
-    createCard(project.doc, { status: "todo", title: "two" });
-    const id = createCard(project.doc, { status: "done", title: "three" });
+    createCard(project.doc, { status: "todo", title: "one" }, ada);
+    createCard(project.doc, { status: "todo", title: "two" }, ada);
+    const id = createCard(project.doc, { status: "done", title: "three" }, ada);
     getDescription(project.doc, id)!.insert(0, "details");
     return project;
   }
@@ -173,7 +172,7 @@ describe("export and import", () => {
     const original = await sampleProject();
     const exported = JSON.stringify(exportProject(original.doc));
 
-    const copy = await importProject(exported, fast);
+    const copy = await importProject(exported, ada, fast);
 
     expect(copy.id).not.toBe(original.id);
     // Compare per status: across statuses the order depends on random card ids.
@@ -191,7 +190,7 @@ describe("export and import", () => {
 
   it("keeps the card order within each status", async () => {
     const original = await sampleProject();
-    const copy = await importProject(exportProject(original.doc), fast);
+    const copy = await importProject(exportProject(original.doc), ada, fast);
 
     expect(getCards(copy.doc, "todo").map((c) => c.title)).toEqual(["one", "two"]);
 
@@ -209,7 +208,7 @@ describe("export and import", () => {
     ];
 
     for (const input of bad) {
-      await expect(importProject(input, fast)).rejects.toBeInstanceOf(ImportError);
+      await expect(importProject(input, ada, fast)).rejects.toBeInstanceOf(ImportError);
     }
     expect(listProjects()).toHaveLength(0);
   });
@@ -225,7 +224,7 @@ describe("export and import", () => {
         "garbage",
       ],
     };
-    const project = await importProject(file, fast);
+    const project = await importProject(file, ada, fast);
 
     const cards = getCards(project.doc);
     expect(cards).toHaveLength(3);
@@ -234,7 +233,7 @@ describe("export and import", () => {
 
     // The real test of "never trust the keys": later ordering still works.
     expect(() => orderForIndex(project.doc, "todo", 1)).not.toThrow();
-    expect(() => createCard(project.doc, { status: "todo", title: "later" })).not.toThrow();
+    expect(() => createCard(project.doc, { status: "todo", title: "later" }, ada)).not.toThrow();
     await project.close();
   });
 });

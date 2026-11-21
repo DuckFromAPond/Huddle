@@ -1,24 +1,52 @@
-import { useEffect, useState } from "react";
-import * as Y from "yjs";
-import { getActivity, type CardEvent } from "@/lib/doc/activity";
+import { useCallback, useSyncExternalStore } from "react";
+import type * as Y from "yjs";
+import type { CardEvent } from "@/lib/doc/activity";
 
-export function useCardActivity(card?: Y.Map<unknown>) {
-  const [events, setEvents] = useState<CardEvent[]>([]);
+const EMPTY: CardEvent[] = [];
+// One sorted copy per log, rebuilt only after the log changes.
+// using weakmap for caching
+const cache = new WeakMap<Y.Array<CardEvent>, CardEvent[]>();
 
-  useEffect(() => {
-    const log = card?.get("activity") as Y.Array<CardEvent> | undefined;
+export function useCardActivity(card?: Y.Map<unknown>): CardEvent[] {
+  const log = card?.get("activity") as Y.Array<CardEvent> | undefined;
 
-    if (!card || !log) {
-      return setEvents([]);
+  // reacts on change
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      if (!log) {
+        return () => {};
+      }
+
+      // handler deletes the cache on change
+      const handler = () => {
+        cache.delete(log);
+        onChange();
+      };
+
+      // call handler when log is changed
+      log.observe(handler);
+
+      // clean up
+      return () => log.unobserve(handler);
+    },
+    [log],
+  );
+
+  // runs after subscribe clears cache
+  const getSnapshot = useCallback(() => {
+    if (!log) {
+      return EMPTY;
     }
 
-    const update = () => setEvents(getActivity(card));
-    update();
+    // get log in cache, if not cached then set cache
+    let events = cache.get(log);
+    if (!events) {
+      events = [...log.toArray()].sort((a, b) => b.at - a.at); // newest first
+      cache.set(log, events);
+    }
 
-    log.observe(update);
+    return events;
+  }, [log]);
 
-    return () => log.unobserve(update);
-  }, [card]);
-
-  return events;
+  return useSyncExternalStore(subscribe, getSnapshot, () => EMPTY);
 }

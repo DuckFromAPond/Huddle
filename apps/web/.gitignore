@@ -24,6 +24,8 @@
 .DS_Store
 *.pem
 .vscode
+.claude/skills/modern-web-guidance/
+skills-lock.json
 
 # debug
 npm-debug.log*

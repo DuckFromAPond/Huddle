@@ -9,12 +9,12 @@ import {
   moveCard,
   setTitle,
 } from "@/lib/doc/cards";
-import { fork, snapshot, sync } from "@/tests/helpers";
+import { ada, fork, kim, snapshot, sync } from "@/tests/helpers";
 
 /** Two users that start from the same history. */
 function twoPeers() {
   const a = new Y.Doc();
-  const id = createCard(a, { status: "todo", title: "Write tests" });
+  const id = createCard(a, { status: "todo", title: "Write tests" }, ada);
   const b = fork(a);
   return { a, b, id };
 }
@@ -23,8 +23,8 @@ describe("concurrent moves", () => {
   it("converge, and status + order always come from the same move", () => {
     const { a, b, id } = twoPeers();
 
-    moveCard(a, id, "in-progress", "a0");
-    moveCard(b, id, "done", "a1");
+    moveCard(a, id, "in-progress", "a0", ada);
+    moveCard(b, id, "done", "a1", kim);
     sync(a, b);
 
     expect(snapshot(a)).toEqual(snapshot(b));
@@ -55,8 +55,8 @@ describe("offline create", () => {
   it("keeps both cards, no duplicates, same order on both peers", () => {
     const { a, b } = twoPeers();
 
-    createCard(a, { status: "todo", title: "From A, offline" });
-    createCard(b, { status: "todo", title: "From B, offline" });
+    createCard(a, { status: "todo", title: "From A, offline" }, ada);
+    createCard(b, { status: "todo", title: "From B, offline" }, kim);
     sync(a, b);
 
     expect(getCards(a)).toHaveLength(3);
@@ -69,8 +69,8 @@ describe("offline create", () => {
     const { a, b } = twoPeers();
 
     // Both append to the end of the same column, so both pick the same key.
-    createCard(a, { status: "todo", title: "A" });
-    createCard(b, { status: "todo", title: "B" });
+    createCard(a, { status: "todo", title: "A" }, ada);
+    createCard(b, { status: "todo", title: "B" }, kim);
     const keys = [...getCards(a), ...getCards(b)].map((c) => c.order);
     sync(a, b);
 

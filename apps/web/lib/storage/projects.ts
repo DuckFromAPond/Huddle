@@ -15,6 +15,7 @@ import {
   removeProject,
   upsertProject,
 } from "@/lib/storage/project-index";
+import { getCards, STATUSES, type Status } from "@/lib/doc/cards";
 import type { Author } from "@/lib/doc/activity";
 
 // BROWSER ONLY. Call these from client components (inside useEffect), never during
@@ -58,15 +59,20 @@ export async function openProject(id: string, options: OpenOptions = {}): Promis
   let closed = false;
 
   // helper func for updating the localStorage
-  const writeIndex = () => {
-    // clear timer
+  const writeIndex = (touch = true) => {
     timer = undefined;
-
-    // get title from meta map
     const title = getProjectTitle(doc);
+    if (title === undefined) return;
 
-    if (title === undefined) return; // empty doc: nothing worth listing yet
-    upsertProject({ id, title, updatedAt: Date.now() });
+    // set counts for each status
+    const counts = Object.fromEntries(STATUSES.map((s) => [s, 0])) as Record<Status, number>;
+
+    // update count for each status
+    for (const card of getCards(doc)) {
+      counts[card.status]++;
+    }
+
+    upsertProject({ id, title, counts, ...(touch && { updatedAt: Date.now() }) });
   };
 
   // Attached only AFTER whenSynced, so loading from disk is never counted as an edit.
@@ -83,8 +89,8 @@ export async function openProject(id: string, options: OpenOptions = {}): Promis
   doc.on("update", onUpdate);
 
   // The index is only a cache. If it lost this project, rebuild the entry.
-  if (existedLocally && !getProjectSummary(id)) {
-    writeIndex();
+  if (existedLocally && !getProjectSummary(id)?.counts) {
+    writeIndex(false);
   }
 
   if (existedLocally) {

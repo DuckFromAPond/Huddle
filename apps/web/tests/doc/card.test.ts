@@ -12,7 +12,7 @@ import {
   STATUSES,
   type Status,
 } from "@/lib/doc/cards";
-import { fork, sync } from "@/tests/helpers";
+import { ada, fork, sync } from "@/tests/helpers";
 
 /** Titles of one status's cards, in display order. */
 function titles(doc: Y.Doc, status: Status): string[] {
@@ -22,16 +22,16 @@ function titles(doc: Y.Doc, status: Status): string[] {
 /** A doc with cards "A", "B", "C" in todo, in that order. Returns their ids. */
 function threeCards() {
   const doc = new Y.Doc();
-  const a = createCard(doc, { status: "todo", title: "A", order: "a0" });
-  const b = createCard(doc, { status: "todo", title: "B", order: "a1" });
-  const c = createCard(doc, { status: "todo", title: "C", order: "a2" });
+  const a = createCard(doc, { status: "todo", title: "A", order: "a0" }, ada);
+  const b = createCard(doc, { status: "todo", title: "B", order: "a1" }, ada);
+  const c = createCard(doc, { status: "todo", title: "C", order: "a2" }, ada);
   return { doc, a, b, c };
 }
 
 describe("createCard", () => {
   it("stores the title and status, with an empty description and an order key", () => {
     const doc = new Y.Doc();
-    const id = createCard(doc, { status: "in-progress", title: "Draft" });
+    const id = createCard(doc, { status: "in-progress", title: "Draft" }, ada);
 
     const card = getCard(doc, id)!;
     expect(card.id).toBe(id);
@@ -43,15 +43,15 @@ describe("createCard", () => {
 
   it("gives every card a different id", () => {
     const doc = new Y.Doc();
-    const ids = [1, 2, 3].map((n) => createCard(doc, { status: "todo", title: `Card ${n}` }));
+    const ids = [1, 2, 3].map((n) => createCard(doc, { status: "todo", title: `Card ${n}` }, ada));
     expect(new Set(ids).size).toBe(3);
   });
 
   it("appends to the end of its status by default", () => {
     const doc = new Y.Doc();
-    createCard(doc, { status: "todo", title: "first" });
-    createCard(doc, { status: "todo", title: "second" });
-    createCard(doc, { status: "todo", title: "third" });
+    createCard(doc, { status: "todo", title: "first" }, ada);
+    createCard(doc, { status: "todo", title: "second" }, ada);
+    createCard(doc, { status: "todo", title: "third" }, ada);
 
     expect(titles(doc, "todo")).toEqual(["first", "second", "third"]);
     const orders = getCards(doc, "todo").map((c) => c.order);
@@ -61,7 +61,7 @@ describe("createCard", () => {
 
   it("uses an explicit order when one is given", () => {
     const doc = new Y.Doc();
-    const id = createCard(doc, { status: "todo", title: "x", order: "a5" });
+    const id = createCard(doc, { status: "todo", title: "x", order: "a5" }, ada);
     expect(getCard(doc, id)!.order).toBe("a5");
   });
 });
@@ -73,17 +73,17 @@ describe("getCards and getCard", () => {
 
   it("sorts by order key, not by creation time", () => {
     const doc = new Y.Doc();
-    createCard(doc, { status: "todo", title: "last", order: "a2" });
-    createCard(doc, { status: "todo", title: "first", order: "a0" });
-    createCard(doc, { status: "todo", title: "middle", order: "a1" });
+    createCard(doc, { status: "todo", title: "last", order: "a2" }, ada);
+    createCard(doc, { status: "todo", title: "first", order: "a0" }, ada);
+    createCard(doc, { status: "todo", title: "middle", order: "a1" }, ada);
 
     expect(titles(doc, "todo")).toEqual(["first", "middle", "last"]);
   });
 
   it("compares order keys as plain strings, so uppercase sorts before lowercase", () => {
     const doc = new Y.Doc();
-    createCard(doc, { status: "todo", title: "lower", order: "a0" });
-    createCard(doc, { status: "todo", title: "upper", order: "Zz" });
+    createCard(doc, { status: "todo", title: "lower", order: "a0" }, ada);
+    createCard(doc, { status: "todo", title: "upper", order: "Zz" }, ada);
 
     // "Z" (code 90) comes before "a" (code 97). localeCompare would reverse this.
     expect(titles(doc, "todo")).toEqual(["upper", "lower"]);
@@ -91,9 +91,9 @@ describe("getCards and getCard", () => {
 
   it("filters by status", () => {
     const doc = new Y.Doc();
-    createCard(doc, { status: "todo", title: "t" });
-    createCard(doc, { status: "in-progress", title: "p" });
-    createCard(doc, { status: "done", title: "d" });
+    createCard(doc, { status: "todo", title: "t" }, ada);
+    createCard(doc, { status: "in-progress", title: "p" }, ada);
+    createCard(doc, { status: "done", title: "d" }, ada);
 
     expect(titles(doc, "todo")).toEqual(["t"]);
     expect(titles(doc, "in-progress")).toEqual(["p"]);
@@ -107,7 +107,7 @@ describe("getCards and getCard", () => {
 
   it("falls back to todo if a card has a status this version does not know", () => {
     const doc = new Y.Doc();
-    const id = createCard(doc, { status: "done", title: "odd" });
+    const id = createCard(doc, { status: "done", title: "odd" }, ada);
     (doc.getMap("cards").get(id) as Y.Map<unknown>).set("status", "archived");
 
     expect(getCard(doc, id)!.status).toBe("todo");
@@ -121,9 +121,9 @@ describe("getCards and getCard", () => {
 describe("moveCard", () => {
   it("changes status and order together", () => {
     const doc = new Y.Doc();
-    const id = createCard(doc, { status: "todo", title: "x", order: "a0" });
+    const id = createCard(doc, { status: "todo", title: "x", order: "a0" }, ada);
 
-    expect(moveCard(doc, id, "done", "a7")).toBe(true);
+    expect(moveCard(doc, id, "done", "a7", ada)).toBe(true);
 
     const card = getCard(doc, id)!;
     expect(card.status).toBe("done");
@@ -133,25 +133,25 @@ describe("moveCard", () => {
 
   it("emits one change for the whole move, not one per field", () => {
     const doc = new Y.Doc();
-    const id = createCard(doc, { status: "todo", title: "x", order: "a0" });
+    const id = createCard(doc, { status: "todo", title: "x", order: "a0" }, ada);
 
     let updates = 0;
     doc.on("update", () => updates++);
-    moveCard(doc, id, "done", "a1");
+    moveCard(doc, id, "done", "a1", ada);
 
     expect(updates).toBe(1);
   });
 
   it("reorders within the same status", () => {
     const { doc, a } = threeCards();
-    moveCard(doc, a, "todo", "a3"); // A goes after C
+    moveCard(doc, a, "todo", "a3", ada); // A goes after C
 
     expect(titles(doc, "todo")).toEqual(["B", "C", "A"]);
   });
 
   it("returns false and changes nothing for an unknown id", () => {
     const doc = new Y.Doc();
-    expect(moveCard(doc, "nope", "done", "a0")).toBe(false);
+    expect(moveCard(doc, "nope", "done", "a0", ada)).toBe(false);
     expect(getCards(doc)).toHaveLength(0);
   });
 });
@@ -159,7 +159,7 @@ describe("moveCard", () => {
 describe("setTitle and getDescription", () => {
   it("setTitle changes the title and returns false for an unknown id", () => {
     const doc = new Y.Doc();
-    const id = createCard(doc, { status: "todo", title: "old" });
+    const id = createCard(doc, { status: "todo", title: "old" }, ada);
 
     expect(setTitle(doc, id, "new")).toBe(true);
     expect(getCard(doc, id)!.title).toBe("new");
@@ -168,7 +168,7 @@ describe("setTitle and getDescription", () => {
 
   it("getDescription returns the live text, and edits show up on the card", () => {
     const doc = new Y.Doc();
-    const id = createCard(doc, { status: "todo", title: "x" });
+    const id = createCard(doc, { status: "todo", title: "x" }, ada);
 
     getDescription(doc, id)!.insert(0, "some notes");
     expect(getCard(doc, id)!.description).toBe("some notes");
@@ -201,7 +201,7 @@ describe("orderForIndex", () => {
     const order = orderForIndex(doc, "todo", 0);
     expect(order.length).toBeGreaterThan(0);
 
-    const id = createCard(doc, { status: "todo", title: "x", order });
+    const id = createCard(doc, { status: "todo", title: "x", order }, ada);
     expect(getCard(doc, id)!.order).toBe(order);
   });
 
@@ -245,12 +245,12 @@ describe("orderForIndex", () => {
 
   it("only looks at cards in the requested status", () => {
     const onlyTodo = new Y.Doc();
-    createCard(onlyTodo, { status: "todo", title: "x", order: "a0" });
+    createCard(onlyTodo, { status: "todo", title: "x", order: "a0" }, ada);
 
     const withDone = new Y.Doc();
-    createCard(withDone, { status: "todo", title: "x", order: "a0" });
-    createCard(withDone, { status: "done", title: "d1", order: "a1" });
-    createCard(withDone, { status: "done", title: "d2", order: "a2" });
+    createCard(withDone, { status: "todo", title: "x", order: "a0" }, ada);
+    createCard(withDone, { status: "done", title: "d1", order: "a1" }, ada);
+    createCard(withDone, { status: "done", title: "d2", order: "a2" }, ada);
 
     expect(orderForIndex(withDone, "todo", 1)).toBe(orderForIndex(onlyTodo, "todo", 1));
   });
@@ -258,19 +258,19 @@ describe("orderForIndex", () => {
   it("dropping at an index puts the card at that position", () => {
     const { doc, a, c } = threeCards();
 
-    moveCard(doc, c, "todo", orderForIndex(doc, "todo", 0, c)); // C to the top
+    moveCard(doc, c, "todo", orderForIndex(doc, "todo", 0, c), ada); // C to the top
     expect(titles(doc, "todo")).toEqual(["C", "A", "B"]);
 
-    moveCard(doc, a, "todo", orderForIndex(doc, "todo", 2, a)); // A to the end
+    moveCard(doc, a, "todo", orderForIndex(doc, "todo", 2, a), ada); // A to the end
     expect(titles(doc, "todo")).toEqual(["C", "B", "A"]);
   });
 
   it("works across statuses: dropping into another status uses that status's cards", () => {
     const { doc, a } = threeCards();
-    const d1 = createCard(doc, { status: "done", title: "d1", order: "a0" });
-    createCard(doc, { status: "done", title: "d2", order: "a1" });
+    const d1 = createCard(doc, { status: "done", title: "d1", order: "a0" }, ada);
+    createCard(doc, { status: "done", title: "d2", order: "a1" }, ada);
 
-    moveCard(doc, a, "done", orderForIndex(doc, "done", 1, a)); // between d1 and d2
+    moveCard(doc, a, "done", orderForIndex(doc, "done", 1, a), ada); // between d1 and d2
 
     expect(titles(doc, "done")).toEqual(["d1", "A", "d2"]);
     expect(getCard(doc, d1)!.status).toBe("done");
@@ -281,10 +281,10 @@ describe("orderForIndex", () => {
     /** One shared card, then two peers each append a card with the same key. */
     function tiedColumn() {
       const a = new Y.Doc();
-      createCard(a, { status: "todo", title: "first" });
+      createCard(a, { status: "todo", title: "first" }, ada);
       const b = fork(a);
-      createCard(a, { status: "todo", title: "from A" });
-      createCard(b, { status: "todo", title: "from B" });
+      createCard(a, { status: "todo", title: "from A" }, ada);
+      createCard(b, { status: "todo", title: "from B" }, ada);
       sync(a, b);
       return a;
     }

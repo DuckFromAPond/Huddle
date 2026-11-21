@@ -7,9 +7,10 @@ import { Plus, Upload } from "lucide-react";
 import { EmptyState } from "@/components/layout/empty-state";
 import { ProjectList } from "@/components/project/project-list";
 import { ProjectListSkeleton } from "@/components/project/project-skeleton";
-import { ProjTitle } from "@/components/ui/typography";
+import { Title } from "@/components/ui/typography";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/typography";
 
 import { createProject, importProject, type OpenProject } from "@/lib/storage/projects";
 import { ImportError } from "@/lib/doc/project";
@@ -70,7 +71,7 @@ export default function ProjectsPage() {
       <div className="flex gap-2">
         {/* import btn */}
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() => fileInput.current?.click()}
           disabled={busy !== null}
         >
@@ -78,12 +79,12 @@ export default function ProjectsPage() {
         </Button>
 
         {/* create btn */}
-        <Button onClick={handleCreate} disabled={busy !== null}>
+        <Button variant="default" onClick={handleCreate} disabled={busy !== null}>
           <Plus className="size-4" /> {busy === "create" ? "Creating…" : "New project"}
         </Button>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <Text className="text-sm text-destructive">{error}</Text>}
 
       {/* input for import */}
       <input
@@ -114,7 +115,7 @@ export default function ProjectsPage() {
   return (
     <Container className="p-6 pt-4">
       <div className="flex items-start justify-between pb-4">
-        <ProjTitle className="text-2xl">Projects</ProjTitle>
+        <Title>Projects</Title>
         {actions}
       </div>
       <ProjectList projects={projects} />
