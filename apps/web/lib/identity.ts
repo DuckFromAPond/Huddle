@@ -1,8 +1,14 @@
 import type { Author } from "@/lib/doc/activity";
 
+// set up for listener
 const KEY = "huddle:identity";
 const EVENT = "huddle:identity-changed";
 export const MAX_NAME_LENGTH = 32;
+
+// used when localStorage is blocked, so one tab keeps one identity
+let fallback: Author | null = null;
+
+const HEX = /^#[0-9a-f]{6}$/i;
 
 /** Presence colors from Sanzo Wada's dictionary. All keep white initials at 5:1 or better. */
 export const IDENTITY_COLORS = [
@@ -24,23 +30,34 @@ function store(): Storage | null {
   }
 }
 
+/** Peer data is untrusted: only plain #rrggbb colours reach `style`. */
+export function safeColor(color: unknown): string {
+  return typeof color === "string" && HEX.test(color) ? color : "#547076";
+}
+
+/** parsed JSON input and returns name and color */
 export function parseIdentity(raw: string | null): Author | null {
   if (!raw) return null;
+
   try {
-    const v: unknown = JSON.parse(raw);
-    if (typeof v !== "object" || v === null) return null;
-    const { name, color } = v as Record<string, unknown>;
-    return typeof name === "string" && typeof color === "string" ? { name, color } : null;
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== "object" || parsed === null) return null;
+
+    const { name, color } = parsed as Record<string, unknown>;
+    return typeof name === "string" && typeof color === "string"
+      ? { name, color: safeColor(color) }
+      : null;
   } catch {
     return null;
   }
 }
 
-/** Raw string, so useSyncExternalStore compares by value. */
+/** get user detail (selected color & name) as raw string, so useSyncExternalStore compares by value in hook. */
 export function getIdentitySnapshot(): string | null {
-  return store()?.getItem(KEY) ?? null;
+  return store()?.getItem(KEY) ?? (fallback ? JSON.stringify(fallback) : null);
 }
 
+// set up listener
 export function subscribeIdentity(cb: () => void): () => void {
   window.addEventListener(EVENT, cb);
   window.addEventListener("storage", cb); // other tabs
@@ -51,27 +68,41 @@ export function subscribeIdentity(cb: () => void): () => void {
 }
 
 export function setIdentity(identity: Author): void {
-  const clean: Author = {
+  // user input
+  const user: Author = {
     name: identity.name.trim().slice(0, MAX_NAME_LENGTH) || "Guest",
     color: identity.color,
   };
+
+  fallback = user; // always, so a rename still works without storage
+
   try {
-    store()?.setItem(KEY, JSON.stringify(clean));
+    store()?.setItem(KEY, JSON.stringify(user));
   } catch {
     // storage blocked: the name lasts for this page only
   }
-  if (typeof window !== "undefined") window.dispatchEvent(new Event(EVENT));
+
+  // set changed event after setting identity
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(EVENT));
+  }
 }
 
 /** The current identity; creates and saves a guest one on first use. Browser only. */
 export function getIdentity(): Author {
   const saved = parseIdentity(getIdentitySnapshot());
-  if (saved) return saved;
 
+  // get existing identity
+  if (saved) {
+    return saved;
+  }
+
+  // set up initial identity
   const identity: Author = {
     name: `Guest ${Math.floor(1000 + Math.random() * 9000)}`,
     color: IDENTITY_COLORS[Math.floor(Math.random() * IDENTITY_COLORS.length)].hex,
   };
+
   setIdentity(identity);
   return identity;
 }

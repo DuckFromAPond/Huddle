@@ -17,6 +17,7 @@ import { ImportError } from "@/lib/doc/project";
 import { useProjectList } from "@/hooks/use-projects";
 import { getIdentity } from "@/lib/identity";
 import { projectPath } from "@/lib/routes";
+import { requestPersistentStorage } from "@/lib/storage/persist";
 
 export default function ProjectsPage() {
   const router = useRouter();
@@ -35,6 +36,8 @@ export default function ProjectsPage() {
 
   // create a new proj
   async function handleCreate() {
+    void requestPersistentStorage();
+
     setError(null);
     setBusy("create");
     try {
@@ -48,6 +51,8 @@ export default function ProjectsPage() {
 
   // file change (import)
   async function handleFile(event: React.ChangeEvent<HTMLInputElement>) {
+    void requestPersistentStorage();
+
     const file = event.target.files?.[0];
     event.target.value = ""; // lets the same file be picked again
     if (!file) return;
@@ -106,7 +111,7 @@ export default function ProjectsPage() {
     return (
       <EmptyState
         title="Start your first project"
-        description="Boards live on this device and sync encrypted when you share them."
+        description="Boards live on this device. Share a link to collaborate."
         action={actions}
       />
     );

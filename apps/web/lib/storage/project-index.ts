@@ -103,12 +103,16 @@ export function markProjectOpened(id: string): void {
   if (getProjectSummary(id)) upsertProject({ id, lastOpenedAt: Date.now() });
 }
 
-/** Projects that have been opened, most recently opened first. */
-export function listRecentProjects(limit = 5): ProjectSummary[] {
-  return read()
+/** Opened projects only, most recently opened first so hook can share it. */
+export function sortRecent(projects: ProjectSummary[], limit = 5): ProjectSummary[] {
+  return projects
     .filter((p) => p.lastOpenedAt !== undefined)
     .sort((a, b) => (b.lastOpenedAt ?? 0) - (a.lastOpenedAt ?? 0))
     .slice(0, limit);
+}
+
+export function listRecentProjects(limit = 5): ProjectSummary[] {
+  return sortRecent(read(), limit);
 }
 
 export function removeProject(id: string): void {

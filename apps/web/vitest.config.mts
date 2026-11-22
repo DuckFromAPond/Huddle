@@ -1,4 +1,3 @@
-// vitest.config.ts
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";

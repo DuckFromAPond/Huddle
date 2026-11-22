@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import type * as Y from "yjs";
-import { cardsMap, getCards, type Card } from "@/lib/doc/cards"; // adjust to your paths
+import { cardsMap, getCards, type Card } from "@/lib/doc/cards";
 
 // Re-reads every card whenever anything under `cards` changes, local or remote.
 // The doc stays the only source of truth; React state is just a snapshot of it.

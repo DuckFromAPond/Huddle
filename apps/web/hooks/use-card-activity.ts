@@ -1,9 +1,11 @@
+"use client";
+
 import { useCallback, useSyncExternalStore } from "react";
 import type * as Y from "yjs";
-import type { CardEvent } from "@/lib/doc/activity";
+import { activityFromLog, type CardEvent } from "@/lib/doc/activity";
 
 const EMPTY: CardEvent[] = [];
-// One sorted copy per log, rebuilt only after the log changes.
+// one newest-first copy per log, rebuilt only after the log changes
 // using weakmap for caching
 const cache = new WeakMap<Y.Array<CardEvent>, CardEvent[]>();
 
@@ -41,7 +43,7 @@ export function useCardActivity(card?: Y.Map<unknown>): CardEvent[] {
     // get log in cache, if not cached then set cache
     let events = cache.get(log);
     if (!events) {
-      events = [...log.toArray()].sort((a, b) => b.at - a.at); // newest first
+      events = activityFromLog(log);
       cache.set(log, events);
     }
 

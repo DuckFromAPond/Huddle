@@ -33,11 +33,15 @@ export function useOpenProject(id: string): OpenProjectState {
         }
 
         if (!opened.existedLocally) {
-          // no local copy: close and remove the empty database openProject just created.
-          // (When the relay exists, a joiner waits for the first sync here instead.)
+          // no local copy then close and remove the empty database openProject just created.
+          // (when the relay exists, a joiner waits for the first sync here instead.)
           await opened.close();
           await deleteProject(id);
-          if (!cancelled) setResult({ id, state: { status: "not-found" } });
+
+          if (!cancelled) {
+            setResult({ id, state: { status: "not-found" } });
+          }
+
           return;
         }
 
@@ -46,7 +50,9 @@ export function useOpenProject(id: string): OpenProjectState {
       })
       .catch(() => {
         // e.g. IndexedDB blocked (some private-browsing modes)
-        if (!cancelled) setResult({ id, state: { status: "error" } });
+        if (!cancelled) {
+          setResult({ id, state: { status: "error" } });
+        }
       });
 
     return () => {

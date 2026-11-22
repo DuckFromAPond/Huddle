@@ -5,6 +5,7 @@ import { IdentityForm } from "@/components/layout/identity-form";
 import { Muted } from "@/components/ui/typography";
 import { useIdentity } from "@/hooks/use-identity";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { safeColor } from "@/lib/identity";
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -31,7 +32,7 @@ export function IdentityMenu() {
             type="button"
             aria-label={`You appear as ${identity.name}. Change name and color`}
             className="grid size-7 cursor-pointer place-items-center rounded-full text-xs font-medium text-white ring-2 ring-background transition-transform active:scale-95 motion-reduce:transition-none"
-            style={{ backgroundColor: identity.color }}
+            style={{ backgroundColor: safeColor(identity.color) }}
           />
         }
       >

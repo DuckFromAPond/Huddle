@@ -72,6 +72,8 @@ export async function openProject(id: string, options: OpenOptions = {}): Promis
       counts[card.status]++;
     }
 
+    // the index is only a cache. If it lost this project, rebuild the entry.
+    // the real last-edit time is gone, so the rebuilt entry counts as updated now.
     upsertProject({ id, title, counts, ...(touch && { updatedAt: Date.now() }) });
   };
 

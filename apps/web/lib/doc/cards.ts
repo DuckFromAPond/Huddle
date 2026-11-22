@@ -4,7 +4,8 @@ import { generateKeyBetween } from "fractional-indexing";
 import { logEvent, newActivityLog, type Author } from "@/lib/doc/activity";
 
 export const STATUSES = ["todo", "in-progress", "done"] as const; // in other word, this is just the column (or col name)
-
+export const PRIORITIES = ["none", "low", "medium", "high", "urgent"] as const;
+export type Priority = (typeof PRIORITIES)[number];
 export type Status = (typeof STATUSES)[number];
 
 /**  expected shape of the card but not how it is stored in reality;
@@ -14,12 +15,29 @@ export interface Card {
   title: string;
   description: string;
   status: Status;
+  priority: Priority;
   order: string; // fractional index
 }
 
+const KEY_CHARS = /^[0-9A-Za-z]+$/;
+
+/** True if `k` is an order key generateKeyBetween will accept. Keys from peers or files are untrusted. */
+function isValidKey(key: unknown): key is string {
+  if (typeof key !== "string" || !KEY_CHARS.test(key)) return false;
+  try {
+    generateKeyBetween(key, null);
+    return true;
+  } catch {
+    return false;
+  }
+}
 // check if column is a real "status"
-function isStatus(value: unknown): value is Status {
+export function isStatus(value: unknown): value is Status {
   return STATUSES.includes(value as Status);
+}
+
+export function isPriority(value: unknown): value is Priority {
+  return PRIORITIES.includes(value as Priority);
 }
 
 // note: Y.Map<unknown> is a mapping for one card (title, desc...)
@@ -43,12 +61,14 @@ function readCard(id: string, card: Y.Map<unknown>): Card {
   const description = card.get("description");
   const status = card.get("status");
   const title = card.get("title");
+  const priority = card.get("priority");
 
   return {
     id,
     title: typeof title === "string" ? title : "",
     description: description instanceof Y.Text ? description.toString() : "",
     status: isStatus(status) ? status : "todo", // tolerate bad data from a peer
+    priority: isPriority(priority) ? priority : "none", // absent or bad data means none
     order: String(card.get("order") ?? ""),
   };
 }
@@ -72,7 +92,7 @@ export function getCard(doc: Y.Doc, id: string): Card | undefined {
 }
 
 /**
- * Order key for dropping a card at `index` in a column
+ * returns order key for dropping a card at `index` in a column
  * (index counts the cards as the user sees them, excluding the card being moved).
  */
 export function orderForIndex(
@@ -84,14 +104,19 @@ export function orderForIndex(
   const column = getCards(doc, status).filter((c) => c.id !== movingId);
   const clamped = Math.max(0, Math.min(index, column.length));
 
-  // find the card before the drop spot
-  const before = column[clamped - 1]?.order ?? null;
+  // nearest valid key above the drop spot
+  let before: string | null = null;
+  for (let i = clamped - 1; i >= 0; i--) {
+    if (isValidKey(column[i]!.order)) {
+      before = column[i]!.order;
+      break;
+    }
+  }
 
-  // Two users can briefly hold equal keys. generateKeyBetween needs a < b,
-  // so skip ahead to the first neighbour that is strictly greater.
+  // nearest valid key below it that is strictly greater (also handles equal keys)
   let after: string | null = null;
   for (const next of column.slice(clamped)) {
-    if (before === null || next.order > before) {
+    if (isValidKey(next.order) && (before === null || next.order > before)) {
       after = next.order;
       break;
     }
@@ -102,12 +127,12 @@ export function orderForIndex(
 
 export function createCard(
   doc: Y.Doc,
-  input: { status: Status; title: string; order?: string },
+  input: { status: Status; title: string; priority?: Priority; order?: string },
   by: Author,
   event: "created" | "imported" = "created",
 ): string {
   const id = nanoid();
-  const order = input.order ?? orderForIndex(doc, input.status, Infinity);
+  const order = isValidKey(input.order) ? input.order : orderForIndex(doc, input.status, Infinity);
 
   // changes on yjs doc are wrapped in transaction
   doc.transact(() => {
@@ -116,6 +141,7 @@ export function createCard(
     card.set("title", input.title);
     card.set("description", new Y.Text());
     card.set("status", input.status);
+    card.set("priority", input.priority ?? "none");
     card.set("order", order);
     card.set("activity", newActivityLog());
     logEvent(card, by, { type: event });
@@ -149,10 +175,36 @@ export function moveCard(
   return true;
 }
 
-export function setTitle(doc: Y.Doc, id: string, title: string): boolean {
+export function setPriority(doc: Y.Doc, id: string, priority: Priority, by: Author): boolean {
   const card = cardsMap(doc).get(id);
   if (!card) return false;
-  card.set("title", title);
+
+  const current = card.get("priority");
+  const from: Priority = isPriority(current) ? current : "none";
+  if (from === priority) return true; // nothing changed, so write and log nothing
+
+  doc.transact(() => {
+    card.set("priority", priority);
+    logEvent(card, by, { type: "priority", from, to: priority });
+  });
+  return true;
+}
+
+export function setTitle(doc: Y.Doc, id: string, title: string, by: Author): boolean {
+  const card = cardsMap(doc).get(id);
+  if (!card) return false;
+
+  const old = card.get("title");
+  if (old === title) return true; // same title, so write nothing and log nothing
+
+  doc.transact(() => {
+    card.set("title", title);
+    logEvent(card, by, {
+      type: "renamed",
+      from: typeof old === "string" ? old : "",
+      to: title,
+    });
+  });
   return true;
 }
 
@@ -185,21 +237,32 @@ export function dropCard(
   // helper for fetching the order value of a given id from the doc
   const orderOf = (id: string | undefined): string | null => {
     if (!id) return null;
-
     const order = cardsMap(doc).get(id)?.get("order");
-    return typeof order === "string" ? order : null;
+    return isValidKey(order) ? order : null;
   };
 
   // get the order of surrounding card
-  const prev = orderOf(columnIds[index - 1]);
-  const next = orderOf(columnIds[index + 1]);
+  let prev: string | null = null;
+  for (let i = index - 1; i >= 0; i--) {
+    prev = orderOf(columnIds[i]);
+    if (prev !== null) break;
+  }
+
+  let next: string | null = null;
+  for (let i = index + 1; i < columnIds.length; i++) {
+    const k = orderOf(columnIds[i]);
+    if (k !== null && (prev === null || k > prev)) {
+      next = k;
+      break;
+    }
+  }
 
   // when card is dropped back where it already was: write nothing, so a plain click can't conflict with a peer
   const card = cardsMap(doc).get(cardId);
   const current = card?.get("order");
   if (
     card?.get("status") === status &&
-    typeof current === "string" &&
+    isValidKey(current) &&
     (prev === null || prev < current) &&
     (next === null || current < next)
   ) {
@@ -207,10 +270,7 @@ export function dropCard(
   }
 
   // two peers can briefly leave equal or inverted keys, and generateKeyBetween throws on those
-  const order =
-    prev !== null && next !== null && prev >= next
-      ? generateKeyBetween(prev, null)
-      : generateKeyBetween(prev, next);
+  const order = generateKeyBetween(prev, next);
 
   moveCard(doc, cardId, status, order, by);
 }

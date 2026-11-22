@@ -1,5 +1,13 @@
 import * as Y from "yjs";
-import { createCard, getCards, getDescription, STATUSES, type Status } from "@/lib/doc/cards";
+import {
+  createCard,
+  getCards,
+  getDescription,
+  isStatus,
+  isPriority,
+  type Status,
+  type Priority,
+} from "@/lib/doc/cards";
 import type { Author } from "@/lib/doc/activity";
 
 export const SCHEMA_VERSION = 1;
@@ -42,6 +50,7 @@ export interface ExportedCard {
   title: string;
   description: string;
   status: Status;
+  priority: Priority;
   order: string;
 }
 
@@ -62,10 +71,11 @@ export function exportProject(doc: Y.Doc): ExportedProject {
     schemaVersion: SCHEMA_VERSION,
     title: getProjectTitle(doc) ?? "Untitled",
     exportedAt: new Date().toISOString(),
-    cards: getCards(doc).map(({ title, description, status, order }) => ({
+    cards: getCards(doc).map(({ title, description, status, priority, order }) => ({
       title,
       description,
       status,
+      priority,
       order,
     })),
   };
@@ -74,10 +84,6 @@ export function exportProject(doc: Y.Doc): ExportedProject {
 /** Raw doc contents, for debugging only. The stored format is binary and hard to inspect. */
 export function exportDebug(doc: Y.Doc): unknown {
   return Object.fromEntries(Array.from(doc.share, ([name, type]) => [name, type.toJSON()]));
-}
-
-function isStatus(value: unknown): value is Status {
-  return STATUSES.includes(value as Status);
 }
 
 /** Never trust a file so check the shape and clean every field. Throws ImportError. */
@@ -111,6 +117,7 @@ export function parseImport(raw: unknown): ExportedProject {
       title: typeof card.title === "string" ? card.title : "",
       description: typeof card.description === "string" ? card.description : "",
       status: isStatus(card.status) ? card.status : "todo",
+      priority: isPriority(card.priority) ? card.priority : "none",
       order: typeof card.order === "string" ? card.order : "",
     };
   });
@@ -138,8 +145,8 @@ export function applyImport(doc: Y.Doc, data: ExportedProject, by: Author): void
         doc,
         {
           status: card.status,
+          priority: card.priority,
           title: card.title,
-          order: card.order || undefined, // reuse the exported key
         },
         by,
         "imported",

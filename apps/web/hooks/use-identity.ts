@@ -12,7 +12,9 @@ export function useIdentity(): Author | null {
   // first visit: create the guest identity. setIdentity fires the change event,
   // so the store re-renders us; no setState here.
   useEffect(() => {
-    if (raw === null) getIdentity();
+    if (raw === null) {
+      getIdentity();
+    }
   }, [raw]);
 
   return identity;
