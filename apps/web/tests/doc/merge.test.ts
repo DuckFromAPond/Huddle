@@ -42,7 +42,7 @@ describe("delete versus edit", () => {
     const { a, b, id } = twoPeers();
 
     deleteCard(a, id);
-    setTitle(b, id, "Edited while the other peer deleted it");
+    setTitle(b, id, "Edited while the other peer deleted it", kim);
     getDescription(b, id)!.insert(0, "more edits");
     sync(a, b);
 

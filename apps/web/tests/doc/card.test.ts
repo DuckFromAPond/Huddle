@@ -10,6 +10,8 @@ import {
   orderForIndex,
   setTitle,
   STATUSES,
+  dropCard,
+  cardsMap,
   type Status,
 } from "@/lib/doc/cards";
 import { ada, fork, sync } from "@/tests/helpers";
@@ -161,9 +163,9 @@ describe("setTitle and getDescription", () => {
     const doc = new Y.Doc();
     const id = createCard(doc, { status: "todo", title: "old" }, ada);
 
-    expect(setTitle(doc, id, "new")).toBe(true);
+    expect(setTitle(doc, id, "new", ada)).toBe(true);
     expect(getCard(doc, id)!.title).toBe("new");
-    expect(setTitle(doc, "nope", "x")).toBe(false);
+    expect(setTitle(doc, "nope", "x", ada)).toBe(false);
   });
 
   it("getDescription returns the live text, and edits show up on the card", () => {
@@ -314,5 +316,18 @@ describe("orderForIndex", () => {
       const end = orderForIndex(doc, "todo", 3);
       expect(end > tie!.order).toBe(true);
     });
+  });
+});
+
+describe("bad order keys from a peer", () => {
+  it.each([
+    ["empty", ""],
+    ["junk", "NOT A KEY"],
+    ["number", 5],
+  ])("orderForIndex and dropCard survive a %s key", (_label, bad) => {
+    const { doc, a, b } = threeCards();
+    cardsMap(doc).get(b)!.set("order", bad);
+    expect(() => orderForIndex(doc, "todo", 1)).not.toThrow();
+    expect(() => dropCard(doc, a, "todo", [b, a], ada)).not.toThrow();
   });
 });

@@ -56,6 +56,23 @@ describe("persistence", () => {
     await project.close();
     expect(listProjects()).toHaveLength(0);
   });
+
+  it("stores per-status card counts in the index", async () => {
+    const p = await createProject("Counts", fast);
+    createCard(p.doc, { status: "todo", title: "1" }, ada);
+    createCard(p.doc, { status: "todo", title: "2" }, ada);
+    createCard(p.doc, { status: "done", title: "3" }, ada);
+    await p.close();
+    expect(getProjectSummary(p.id)!.counts).toEqual({ todo: 2, "in-progress": 0, done: 1 });
+  });
+
+  it("rejects an index entry with non-number counts", () => {
+    localStorage.setItem(
+      "huddle:projects",
+      JSON.stringify([{ id: "a", title: "t", updatedAt: 1, counts: { todo: "2" } }]),
+    );
+    expect(listProjects()).toEqual([]);
+  });
 });
 
 describe("dashboard index", () => {
@@ -142,7 +159,7 @@ describe("dashboard index", () => {
   });
 });
 
-describe("delete", () => {
+describe("delete and close", () => {
   it("removes the project from the index and from IndexedDB", async () => {
     const created = await createProject("Doomed", fast);
     createCard(created.doc, { status: "todo", title: "gone soon" }, ada);
@@ -155,6 +172,20 @@ describe("delete", () => {
     expect(reopened.existedLocally).toBe(false);
     expect(getCards(reopened.doc)).toHaveLength(0);
     await reopened.close();
+  });
+
+  it("deleting a never-created id leaves no database behind", async () => {
+    const p = await openProject("ghost", fast);
+    await p.close();
+    await deleteProject("ghost");
+    const names = (await indexedDB.databases()).map((d) => d.name);
+    expect(names).not.toContain("huddle-project-ghost");
+  });
+
+  it("close() is safe to call twice", async () => {
+    const p = await createProject("Twice", fast);
+    await p.close();
+    await expect(p.close()).resolves.toBeUndefined();
   });
 });
 
