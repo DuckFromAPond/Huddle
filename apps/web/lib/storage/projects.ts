@@ -7,6 +7,8 @@ import {
   ImportError,
   initProject,
   isInitialized,
+  upgradeSchema,
+  isNewerThanApp,
   parseImport,
 } from "@/lib/doc/project";
 import {
@@ -15,8 +17,8 @@ import {
   removeProject,
   upsertProject,
 } from "@/lib/storage/project-index";
-import { getCards, STATUSES, type Status } from "@/lib/doc/cards";
-import type { Author } from "@/lib/doc/activity";
+import { getCards } from "@/lib/doc/cards";
+import { STATUSES, type Status, type Author } from "@/lib/doc/schema";
 
 // BROWSER ONLY. Call these from client components (inside useEffect), never during
 // server rendering: IndexedDB does not exist on the server.
@@ -41,6 +43,8 @@ export interface OpenProject {
   flushIndex(): void;
   /** Flush, then release IndexedDB and the doc. Always call this on unmount. */
   close(): Promise<void>;
+  /** A newer Huddle has updated this project. Show it read-only and ask the user to reload. */
+  tooNew: boolean;
 }
 
 /**
@@ -87,6 +91,11 @@ export async function openProject(id: string, options: OpenOptions = {}): Promis
     timer = setTimeout(writeIndex, delay);
   };
 
+  const tooNew = isNewerThanApp(doc);
+  if (existedLocally && !tooNew) {
+    upgradeSchema(doc);
+  }
+
   // set listener to call onUpdate when the doc is updated
   doc.on("update", onUpdate);
 
@@ -126,6 +135,7 @@ export async function openProject(id: string, options: OpenOptions = {}): Promis
     id,
     doc,
     existedLocally,
+    tooNew,
     // callback functions
     flushIndex,
     close,

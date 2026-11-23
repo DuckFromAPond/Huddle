@@ -1,4 +1,5 @@
-import type { Author } from "@/lib/doc/activity";
+import type { Author } from "@/lib/doc/schema";
+import { nanoid } from "nanoid";
 
 // set up for listener
 const KEY = "huddle:identity";
@@ -43,9 +44,12 @@ export function parseIdentity(raw: string | null): Author | null {
     const parsed: unknown = JSON.parse(raw);
     if (typeof parsed !== "object" || parsed === null) return null;
 
-    const { name, color } = parsed as Record<string, unknown>;
-    return typeof name === "string" && typeof color === "string"
-      ? { name, color: safeColor(color) }
+    const { id, name, color } = parsed as Record<string, unknown>;
+    return typeof id === "string" &&
+      id !== "" &&
+      typeof name === "string" &&
+      typeof color === "string"
+      ? { id, name, color: safeColor(color) }
       : null;
   } catch {
     return null;
@@ -70,6 +74,7 @@ export function subscribeIdentity(cb: () => void): () => void {
 export function setIdentity(identity: Author): void {
   // user input
   const user: Author = {
+    id: identity.id || nanoid(),
     name: identity.name.trim().slice(0, MAX_NAME_LENGTH) || "Guest",
     color: identity.color,
   };
@@ -99,6 +104,7 @@ export function getIdentity(): Author {
 
   // set up initial identity
   const identity: Author = {
+    id: nanoid(),
     name: `Guest ${Math.floor(1000 + Math.random() * 9000)}`,
     color: IDENTITY_COLORS[Math.floor(Math.random() * IDENTITY_COLORS.length)].hex,
   };

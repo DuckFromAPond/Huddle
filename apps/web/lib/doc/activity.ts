@@ -1,7 +1,5 @@
 import * as Y from "yjs";
-import type { Status, Priority } from "@/lib/doc/cards";
-
-export type Author = { name: string; color: string };
+import type { Author, Priority, Status } from "@/lib/doc/schema";
 
 type Base = { by: Author & { clientId: number }; at: number };
 

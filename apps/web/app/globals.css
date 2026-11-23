@@ -5,10 +5,10 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design tokens. Change values here, never in components.
- * Type scale in use: text-xs (12) · text-sm (14) · text-base (16) · text-2xl (24). Nothing else.
+ * Design tokens
+ * Type scale in use: text-xs (12) · text-sm (14) · text-base (16) · text-2xl (24).
  * Corners: rounded-lg (= --radius, 6px) for controls, rounded-xl (~8px) for cards.
- * Colors: warm neutral base + one accent (Antwerp Blue, Sanzo Wada).
+ * Colors: warm neutral base + one accent (Antwerp Blue).
  */
 @theme inline {
   /* fonts come from next/font variables set in app/layout.tsx */

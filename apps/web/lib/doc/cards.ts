@@ -1,23 +1,15 @@
 import * as Y from "yjs";
 import { nanoid } from "nanoid";
 import { generateKeyBetween } from "fractional-indexing";
-import { logEvent, newActivityLog, type Author } from "@/lib/doc/activity";
-
-export const STATUSES = ["todo", "in-progress", "done"] as const; // in other word, this is just the column (or col name)
-export const PRIORITIES = ["none", "low", "medium", "high", "urgent"] as const;
-export type Priority = (typeof PRIORITIES)[number];
-export type Status = (typeof STATUSES)[number];
-
-/**  expected shape of the card but not how it is stored in reality;
- * card does not have id in its maps, but the parent's map uses the id to get the card */
-export interface Card {
-  id: string;
-  title: string;
-  description: string;
-  status: Status;
-  priority: Priority;
-  order: string; // fractional index
-}
+import { logEvent, newActivityLog } from "@/lib/doc/activity";
+import {
+  isPriority,
+  isStatus,
+  type Author,
+  type Card,
+  type Priority,
+  type Status,
+} from "@/lib/doc/schema";
 
 const KEY_CHARS = /^[0-9A-Za-z]+$/;
 
@@ -30,14 +22,6 @@ function isValidKey(key: unknown): key is string {
   } catch {
     return false;
   }
-}
-// check if column is a real "status"
-export function isStatus(value: unknown): value is Status {
-  return STATUSES.includes(value as Status);
-}
-
-export function isPriority(value: unknown): value is Priority {
-  return PRIORITIES.includes(value as Priority);
 }
 
 // note: Y.Map<unknown> is a mapping for one card (title, desc...)

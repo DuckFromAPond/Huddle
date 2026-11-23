@@ -1,10 +1,10 @@
 import * as Y from "yjs";
 import { getCards } from "@/lib/doc/cards";
 
-import type { Author } from "@/lib/doc/activity";
+import type { Author } from "@/lib/doc/schema";
 
-export const ada: Author = { name: "Ada", color: "#82aae2" };
-export const kim: Author = { name: "Kim", color: "#5dcaa5" };
+export const ada: Author = { id: "V1StGXR8_Z5jdHi6B-myT", name: "Ada", color: "#82aae2" };
+export const kim: Author = { id: "W1StGXR7_Z5jdHi6A-mpT", name: "Kim", color: "#5dcaa5" };
 
 /** Standard exchange: each side sends what the other is missing. */
 export function sync(a: Y.Doc, b: Y.Doc): void {

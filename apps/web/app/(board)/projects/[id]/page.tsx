@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useOpenProject } from "@/hooks/use-open-project";
-import { ProjectProvider, useProject } from "@/context/proj-context";
+import { ProjectProvider, useCanEdit, useProject } from "@/context/proj-context";
+import { OutdatedBanner } from "@/components/project/outdated-banner";
 import { getProjectTitle } from "@/lib/doc/project";
 import { Heading, Text } from "@/components/ui/typography";
 
@@ -46,14 +47,17 @@ export default function BoardPage() {
   );
 }
 
-// placeholder: next session replaces this with columns, cards and dragging
 function Board() {
   const { doc } = useProject();
+  const canEdit = useCanEdit();
+
   return (
-    <div className="p-6">
+    <div className="flex flex-col gap-4 p-6">
+      {!canEdit && <OutdatedBanner />}
       <Heading as="h1" className="text-xl font-medium">
         {getProjectTitle(doc) ?? "Untitled"}
       </Heading>
+      {/* TODO columns go here; each one calls useCanEdit() itself */}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useSyncExternalStore } from "react";
-import type { Author } from "@/lib/doc/activity";
+import type { Author } from "@/lib/doc/schema";
 import { getIdentity, getIdentitySnapshot, parseIdentity, subscribeIdentity } from "@/lib/identity";
 
 /** The local user's name and color, live. null on the server and on the very first paint. */

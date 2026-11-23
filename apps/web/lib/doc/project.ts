@@ -1,17 +1,14 @@
 import * as Y from "yjs";
+import { createCard, getCards, getDescription } from "@/lib/doc/cards";
 import {
-  createCard,
-  getCards,
-  getDescription,
   isStatus,
   isPriority,
-  type Status,
-  type Priority,
-} from "@/lib/doc/cards";
-import type { Author } from "@/lib/doc/activity";
-
-export const SCHEMA_VERSION = 1;
-export const MAX_IMPORT_CARDS = 5000;
+  Status,
+  Priority,
+  Author,
+  SCHEMA_VERSION,
+  MAX_IMPORT_CARDS,
+} from "@/lib/doc/schema";
 
 // meta map has the title and version
 function metaMap(doc: Y.Doc): Y.Map<unknown> {
@@ -26,6 +23,19 @@ export function isInitialized(doc: Y.Doc): boolean {
   return typeof metaMap(doc).get("schemaVersion") === "number";
 }
 
+/** An older doc opened by this newer app: raise its version so older apps stop editing it. */
+export function upgradeSchema(doc: Y.Doc): void {
+  const v = metaMap(doc).get("schemaVersion");
+  if (typeof v === "number" && v < SCHEMA_VERSION) {
+    metaMap(doc).set("schemaVersion", SCHEMA_VERSION);
+  }
+}
+
+/** True when a newer Huddle has touched this doc. This app must not edit it: it would misread new values. */
+export function isNewerThanApp(doc: Y.Doc): boolean {
+  const v = metaMap(doc).get("schemaVersion");
+  return typeof v === "number" && v > SCHEMA_VERSION;
+}
 /** Only for brand-new projects. Joiners must never call this */
 export function initProject(doc: Y.Doc, title: string): void {
   doc.transact(() => {

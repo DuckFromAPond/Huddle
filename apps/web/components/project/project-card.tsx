@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { STATUSES, type Status } from "@/lib/doc/cards";
+import { STATUSES, type Status } from "@/lib/doc/schema";
 import type { ProjectSummary } from "@/lib/storage/project-index";
 import { Heading, Text } from "@/components/ui/typography";
 

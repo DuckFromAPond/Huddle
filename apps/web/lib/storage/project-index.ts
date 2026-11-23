@@ -1,4 +1,4 @@
-import type { Status } from "@/lib/doc/cards";
+import type { Status } from "@/lib/doc/schema";
 
 export interface ProjectSummary {
   id: string;
