@@ -10,6 +10,7 @@ import { NavLink } from "@/components/ui/navlink";
 import { Sidebar, SidebarContent, SidebarFooter } from "@/components/ui/sidebar";
 import { useRecentProjects } from "@/hooks/use-recent-projects";
 import { HoverGroup } from "@/components/layout/hover-group";
+import { useOpenSettings } from "@/components/settings/settings-dialog";
 
 /** Navigation for the dashboard pages. Not used on the board, which has a dock. */
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
@@ -18,6 +19,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
   const [recentOpen, setRecentOpen] = useState(true);
   const recentListId = useId();
+
+  const openSettings = useOpenSettings();
 
   return (
     <Sidebar className="p-0 shadow-none" {...props}>
@@ -83,12 +86,15 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
         <SidebarFooter className="p-0">
           <HoverGroup>
-            <NavLink
-              title="Settings"
-              url="/settings"
-              icon={Settings}
-              isActive={pathname === "/settings"}
-            />
+            <button
+              type="button"
+              data-hover-item
+              onClick={openSettings}
+              className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/70"
+            >
+              <Settings className="size-4 shrink-0" aria-hidden="true" />
+              Settings
+            </button>
           </HoverGroup>
         </SidebarFooter>
       </nav>

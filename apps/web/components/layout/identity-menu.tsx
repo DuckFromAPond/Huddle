@@ -6,6 +6,8 @@ import { Muted } from "@/components/ui/typography";
 import { useIdentity } from "@/hooks/use-identity";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { safeColor } from "@/lib/identity";
+import { useState } from "react";
+import { useOpenSettings } from "@/components/settings/settings-dialog";
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -18,6 +20,8 @@ function initials(name: string) {
 /** Your avatar in the topbar: opens a small panel to change the name and color others see. */
 export function IdentityMenu() {
   const identity = useIdentity();
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const openSettings = useOpenSettings();
 
   // same size placeholder while loading, so the topbar doesn't shift
   if (!identity) {
@@ -25,7 +29,7 @@ export function IdentityMenu() {
   }
 
   return (
-    <Popover>
+    <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
       <PopoverTrigger
         render={
           <button
@@ -48,6 +52,17 @@ export function IdentityMenu() {
           <ThemeToggle />
         </div>
         <Muted>Shown to people you share boards with, and on your changes in card history.</Muted>
+
+        <button
+          type="button"
+          className="justify-self-start text-sm text-primary hover:underline"
+          onClick={() => {
+            setPopoverOpen(false);
+            openSettings();
+          }}
+        >
+          All settings
+        </button>
       </PopoverContent>
     </Popover>
   );

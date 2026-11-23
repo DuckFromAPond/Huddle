@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { SettingsProvider } from "@/components/settings/settings-dialog";
 
 import { DM_Sans, Lora, Geist_Mono } from "next/font/google";
 
@@ -31,7 +32,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <SettingsProvider>{children}</SettingsProvider>
         </ThemeProvider>
       </body>
     </html>

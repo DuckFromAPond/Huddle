@@ -14,10 +14,12 @@ import {
 import { useRecentProjects } from "@/hooks/use-recent-projects";
 import { MOBILE_QUERY } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
+import { useOpenSettings } from "@/components/settings/settings-dialog";
 
 export function MobileNav({ className }: { className?: string }) {
   const { recent } = useRecentProjects();
   const [open, setOpen] = useState(false);
+  const openSettings = useOpenSettings();
 
   // the menu only exists on narrow screens: close it when the window becomes wide
   useEffect(() => {
@@ -52,7 +54,7 @@ export function MobileNav({ className }: { className?: string }) {
           </>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link href="/settings" />}>Settings</DropdownMenuItem>
+        <DropdownMenuItem onClick={openSettings}>Settings</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

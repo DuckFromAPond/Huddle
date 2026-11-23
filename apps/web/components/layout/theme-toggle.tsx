@@ -2,25 +2,14 @@
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { changeTheme } from "@/lib/theme";
 
 export function ThemeToggle() {
   const { resolvedTheme, systemTheme, setTheme } = useTheme();
 
   function toggle() {
     const target = resolvedTheme === "dark" ? "light" : "dark"; // opposite of what's on screen
-    const next = target === systemTheme ? "system" : target; // matches the OS → follow the OS
-
-    const apply = () => {
-      // update the page right now, so the browser can capture the "after" picture
-      const root = document.documentElement;
-      root.classList.toggle("dark", target === "dark");
-      root.style.colorScheme = target;
-      setTheme(next); // next-themes saves the choice and keeps its own state in sync
-    };
-
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!document.startViewTransition || reduceMotion) apply();
-    else document.startViewTransition(apply);
+    changeTheme(target === systemTheme ? "system" : target, setTheme, systemTheme); // matches the OS → follow the OS
   }
 
   return (
