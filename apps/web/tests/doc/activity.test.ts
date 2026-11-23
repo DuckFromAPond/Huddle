@@ -54,7 +54,7 @@ describe("card activity", () => {
     moveCard(b, id, "done", "a1", kim);
     sync(a, b);
     const [latest] = getActivity(cardsMap(a).get(id)!);
-    expect(latest!.by).toMatchObject({ name: "Kim", clientId: b.clientID });
+    expect(latest!.by).toMatchObject({ id: kim.id, name: "Kim", clientId: b.clientID });
   });
 
   it("a merge can hold up to 100 events per offline peer, and the next event trims it back", () => {

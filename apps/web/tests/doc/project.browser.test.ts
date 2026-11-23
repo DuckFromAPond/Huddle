@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { createCard, getCards, getDescription, orderForIndex, STATUSES } from "@/lib/doc/cards";
+import { createCard, getCards, getDescription, orderForIndex } from "@/lib/doc/cards";
 import { exportProject, ImportError, isInitialized, setProjectTitle } from "@/lib/doc/project";
 import {
   getProjectSummary,
@@ -10,6 +10,7 @@ import {
 } from "@/lib/storage/project-index";
 import { createProject, deleteProject, importProject, openProject } from "@/lib/storage/projects";
 import { ada } from "@/tests/helpers";
+import { SCHEMA_VERSION, STATUSES } from "@/lib/doc/schema";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const fast = { indexDebounceMs: 0 };
@@ -266,5 +267,32 @@ describe("export and import", () => {
     expect(() => orderForIndex(project.doc, "todo", 1)).not.toThrow();
     expect(() => createCard(project.doc, { status: "todo", title: "later" }, ada)).not.toThrow();
     await project.close();
+  });
+});
+
+describe("schema gate on open", () => {
+  it("flags a project a newer app touched, and does not downgrade it", async () => {
+    const p = await createProject("Future", fast);
+    p.doc.getMap("meta").set("schemaVersion", SCHEMA_VERSION + 1);
+    await p.close();
+
+    const again = await openProject(p.id, fast);
+    expect(again.tooNew).toBe(true);
+    expect(again.doc.getMap("meta").get("schemaVersion")).toBe(SCHEMA_VERSION + 1);
+    await again.close();
+  });
+
+  it("upgrades an older project on open without counting it as an edit", async () => {
+    const p = await createProject("Old", fast);
+    p.doc.getMap("meta").set("schemaVersion", SCHEMA_VERSION - 1);
+    await p.close();
+    const before = getProjectSummary(p.id)!.updatedAt;
+
+    await wait(20);
+    const again = await openProject(p.id, fast);
+    expect(again.tooNew).toBe(false);
+    expect(again.doc.getMap("meta").get("schemaVersion")).toBe(SCHEMA_VERSION);
+    await again.close();
+    expect(getProjectSummary(p.id)!.updatedAt).toBe(before);
   });
 });
