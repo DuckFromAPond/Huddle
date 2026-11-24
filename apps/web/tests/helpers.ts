@@ -1,7 +1,7 @@
 import * as Y from "yjs";
 import { getCards } from "@/lib/doc/cards";
 
-import type { Author } from "@/lib/doc/schema";
+import type { Author } from "@/lib/schema";
 
 export const ada: Author = { id: "V1StGXR8_Z5jdHi6B-myT", name: "Ada", color: "#82aae2" };
 export const kim: Author = { id: "W1StGXR7_Z5jdHi6A-mpT", name: "Kim", color: "#5dcaa5" };

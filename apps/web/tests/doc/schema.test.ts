@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as Y from "yjs";
 import { initProject, isNewerThanApp, upgradeSchema } from "@/lib/doc/project";
-import { SCHEMA_VERSION } from "@/lib/doc/schema";
+import { SCHEMA_VERSION } from "@/lib/schema";
 import { fork, sync } from "@/tests/helpers";
 
 const meta = (doc: Y.Doc) => doc.getMap("meta");

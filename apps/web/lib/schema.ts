@@ -12,6 +12,12 @@ export function isPriority(value: unknown): value is Priority {
   return PRIORITIES.includes(value as Priority);
 }
 
+export const STATUS_LABELS: Record<Status, string> = {
+  todo: "To do",
+  "in-progress": "In progress",
+  done: "Done",
+};
+
 /**  expected shape of the card but not how it is stored in reality;
  * card does not have id in its maps, but the parent's map uses the id to get the card */
 export interface Card {

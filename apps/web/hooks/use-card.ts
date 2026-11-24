@@ -1,27 +1,42 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useMemo, useSyncExternalStore } from "react";
 import type * as Y from "yjs";
 import { cardsMap, getCards } from "@/lib/doc/cards";
-import type { Card } from "@/lib/doc/schema";
+import type { Card } from "@/lib/schema";
 
-// Re-reads every card whenever anything under `cards` changes, local or remote.
-// The doc stays the only source of truth; React state is just a snapshot of it.
+/**
+ * Every card in display order, live: local edits and (later) remote ones.
+ * The doc stays the only source of truth; this is a cached, read-only snapshot of it.
+ */
 export function useCards(doc: Y.Doc): Card[] {
-  const [cards, setCards] = useState<Card[]>(() => getCards(doc));
+  // one small store per doc: subscribe to the doc, rebuild the snapshot only after a change
+  const store = useMemo(() => {
+    let snapshot: Card[] = getCards(doc);
+    let dirty = false;
 
-  // doc change -> observer -> refresh -> set -> re-render
-  useEffect(() => {
-    const map = cardsMap(doc);
-
-    const refresh = () => setCards(getCards(doc));
-    refresh(); // catches changes between the first render and subscribing
-
-    // set observer watch the map and trigger refresh on change
-    map.observeDeep(refresh);
-
-    // clean up: unregister observer
-    return () => map.unobserveDeep(refresh);
+    return {
+      subscribe(onChange: () => void) {
+        const map = cardsMap(doc);
+        const handler = () => {
+          dirty = true; // rebuild lazily, on the next read
+          onChange();
+        };
+        // anything could have changed between the first render and now (e.g. a remote update):
+        // mark dirty so React's post-subscribe check re-reads once
+        dirty = true;
+        map.observeDeep(handler);
+        return () => map.unobserveDeep(handler);
+      },
+      getSnapshot() {
+        if (dirty) {
+          snapshot = getCards(doc);
+          dirty = false;
+        }
+        return snapshot; // same array until something changes, as useSyncExternalStore requires
+      },
+    };
   }, [doc]);
 
-  return cards;
+  return useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
 }

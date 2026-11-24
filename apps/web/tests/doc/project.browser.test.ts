@@ -10,7 +10,7 @@ import {
 } from "@/lib/storage/project-index";
 import { createProject, deleteProject, importProject, openProject } from "@/lib/storage/projects";
 import { ada } from "@/tests/helpers";
-import { SCHEMA_VERSION, STATUSES } from "@/lib/doc/schema";
+import { SCHEMA_VERSION, STATUSES } from "@/lib/schema";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const fast = { indexDebounceMs: 0 };

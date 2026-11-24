@@ -1,4 +1,4 @@
-import type { Author } from "@/lib/doc/schema";
+import type { Author } from "@/lib/schema";
 import { nanoid } from "nanoid";
 
 // set up for listener

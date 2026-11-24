@@ -15,6 +15,10 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
+    "@dnd-kit/abstract": "^0.5.3",
+    "@dnd-kit/collision": "^0.5.3",
+    "@dnd-kit/helpers": "^0.5.3",
+    "@dnd-kit/react": "^0.5.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "fractional-indexing": "^4.0.0",

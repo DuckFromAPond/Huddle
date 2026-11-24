@@ -1,5 +1,5 @@
 import * as Y from "yjs";
-import type { Author, Priority, Status } from "@/lib/doc/schema";
+import type { Author, Priority, Status } from "@/lib/schema";
 
 type Base = { by: Author & { clientId: number }; at: number };
 

@@ -8,7 +8,9 @@ import {
   Author,
   SCHEMA_VERSION,
   MAX_IMPORT_CARDS,
-} from "@/lib/doc/schema";
+} from "@/lib/schema";
+
+export const MAX_TITLE_LENGTH = 80;
 
 // meta map has the title and version
 function metaMap(doc: Y.Doc): Y.Map<unknown> {
@@ -50,8 +52,14 @@ export function getProjectTitle(doc: Y.Doc): string | undefined {
   return typeof title === "string" ? title : undefined;
 }
 
-export function setProjectTitle(doc: Y.Doc, title: string): void {
-  metaMap(doc).set("title", title);
+/** Renames the project. Trims the name, ignores empty names and no-op renames. Returns false if nothing was saved. */
+export function setProjectTitle(doc: Y.Doc, title: string): boolean {
+  const clean = title.trim().slice(0, MAX_TITLE_LENGTH);
+  if (!clean) return false; // keep the old name rather than going blank
+
+  const meta = metaMap(doc);
+  if (meta.get("title") !== clean) meta.set("title", clean); // unchanged → no write, no "edited" bump
+  return true;
 }
 
 // ---------- Export / import ----------

@@ -1,4 +1,4 @@
-import type { Status } from "@/lib/doc/schema";
+import type { Status } from "@/lib/schema";
 
 export interface ProjectSummary {
   id: string;

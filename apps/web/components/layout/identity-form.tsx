@@ -5,7 +5,7 @@ import { useId } from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import type { Author } from "@/lib/doc/schema";
+import type { Author } from "@/lib/schema";
 import { IDENTITY_COLORS, MAX_NAME_LENGTH, setIdentity } from "@/lib/identity";
 
 /** Name + color fields. Used in the avatar popover and on the Settings page. */

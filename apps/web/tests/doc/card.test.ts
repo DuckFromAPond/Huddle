@@ -13,7 +13,7 @@ import {
   cardsMap,
 } from "@/lib/doc/cards";
 import { ada, fork, sync } from "@/tests/helpers";
-import { STATUSES, type Status } from "@/lib/doc/schema";
+import { STATUSES, type Status } from "@/lib/schema";
 
 /** Titles of one status's cards, in display order. */
 function titles(doc: Y.Doc, status: Status): string[] {

@@ -9,7 +9,7 @@ import {
   type Card,
   type Priority,
   type Status,
-} from "@/lib/doc/schema";
+} from "@/lib/schema";
 
 const KEY_CHARS = /^[0-9A-Za-z]+$/;
 

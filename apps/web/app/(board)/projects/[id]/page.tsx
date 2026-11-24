@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useOpenProject } from "@/hooks/use-open-project";
-import { ProjectProvider, useCanEdit, useProject } from "@/context/proj-context";
-import { OutdatedBanner } from "@/components/project/outdated-banner";
-import { getProjectTitle } from "@/lib/doc/project";
-import { Heading, Text } from "@/components/ui/typography";
+import { ProjectProvider } from "@/context/proj-context";
+import { Board } from "@/components/board/board";
+import { Heading, Muted } from "@/components/ui/typography";
+import { Loader2 } from "lucide-react";
+import { BoardTopbar } from "@/components/board/board-topbar";
 
 export default function BoardPage() {
   const { id } = useParams<{ id: string }>();
@@ -14,25 +15,31 @@ export default function BoardPage() {
 
   if (state.status === "loading") {
     return (
-      <Text className="grid h-full place-items-center text-sm text-muted-foreground">
-        Opening project…
-      </Text>
+      <div
+        role="status"
+        className="grid min-h-svh place-items-center animate-in fade-in duration-300 delay-300 fill-mode-both"
+      >
+        <div className="flex flex-col items-center gap-3 text-muted-foreground">
+          <Loader2 className="size-8 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+          <p className="text-base">Opening project…</p>
+        </div>
+      </div>
     );
   }
 
   if (state.status !== "ready") {
     return (
       <div className="grid h-full place-content-center gap-3 text-center">
-        <Heading as="h1" className="text-lg font-medium">
+        <Heading as="h1">
           {state.status === "not-found"
             ? "This project isn't on this device"
             : "Couldn't open this project"}
         </Heading>
-        <Text className="text-sm text-muted-foreground">
+        <Muted>
           {state.status === "not-found"
             ? "It may have been deleted, or it was shared with you and sharing isn't set up yet."
             : "Your browser may be blocking storage, for example in a private window."}
-        </Text>
+        </Muted>
         <Link href="/projects" className="text-sm underline underline-offset-4">
           Back to your projects
         </Link>
@@ -42,22 +49,11 @@ export default function BoardPage() {
 
   return (
     <ProjectProvider value={state.project}>
-      <Board />
+      <div className="flex h-svh flex-col">
+        <BoardTopbar />
+        <Board />
+        {/* <BoardDock />  */}
+      </div>
     </ProjectProvider>
-  );
-}
-
-function Board() {
-  const { doc } = useProject();
-  const canEdit = useCanEdit();
-
-  return (
-    <div className="flex flex-col gap-4 p-6">
-      {!canEdit && <OutdatedBanner />}
-      <Heading as="h1" className="text-xl font-medium">
-        {getProjectTitle(doc) ?? "Untitled"}
-      </Heading>
-      {/* TODO columns go here; each one calls useCanEdit() itself */}
-    </div>
   );
 }

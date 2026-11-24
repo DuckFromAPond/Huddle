@@ -2,8 +2,7 @@
 
 "use client";
 
-import { createContext, useContext } from "react";
-import { useSyncExternalStore } from "react";
+import { createContext, useCallback, useContext, useSyncExternalStore } from "react";
 import { isNewerThanApp } from "@/lib/doc/project";
 import type { OpenProject } from "@/lib/storage/projects";
 
@@ -25,13 +24,17 @@ export function useProject(): OpenProject {
 /** False when this app must not write to the open project (a newer Huddle has updated it). */
 export function useCanEdit(): boolean {
   const { doc } = useProject();
-  return useSyncExternalStore(
-    (cb) => {
+  const subscribe = useCallback(
+    (cb: () => void) => {
       const meta = doc.getMap("meta");
       meta.observe(cb);
       return () => meta.unobserve(cb);
     },
-    () => !isNewerThanApp(doc), // a boolean, so it compares by value safely
+    [doc],
+  );
+  return useSyncExternalStore(
+    subscribe,
+    () => !isNewerThanApp(doc),
     () => false,
   );
 }

@@ -18,7 +18,7 @@ import {
   upsertProject,
 } from "@/lib/storage/project-index";
 import { getCards } from "@/lib/doc/cards";
-import { STATUSES, type Status, type Author } from "@/lib/doc/schema";
+import { STATUSES, type Status, type Author } from "@/lib/schema";
 
 // BROWSER ONLY. Call these from client components (inside useEffect), never during
 // server rendering: IndexedDB does not exist on the server.
