@@ -19,6 +19,7 @@
 
 # production
 /build
+.vitest/
 
 # misc
 .DS_Store
