@@ -8,7 +8,6 @@ import { EmptyState } from "@/components/layout/empty-state";
 import { ProjectList } from "@/components/project/project-list";
 import { ProjectListSkeleton } from "@/components/project/project-skeleton";
 import { Title } from "@/components/ui/typography";
-import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/typography";
 
@@ -118,12 +117,12 @@ export default function ProjectsPage() {
   }
 
   return (
-    <Container className="p-6 pt-4">
+    <div className="flex flex-1 flex-col rounded-md bg-background p-6 pt-4">
       <div className="flex items-start justify-between pb-4">
         <Title>Projects</Title>
         {actions}
       </div>
       <ProjectList projects={projects} />
-    </Container>
+    </div>
   );
 }

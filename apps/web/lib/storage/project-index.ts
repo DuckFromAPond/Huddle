@@ -1,5 +1,6 @@
 import type { Status } from "@/lib/schema";
 
+// project summary used by the dashboard
 export interface ProjectSummary {
   id: string;
   title: string;
@@ -7,6 +8,8 @@ export interface ProjectSummary {
   lastOpenedAt?: number; // in ms since epoch, last time the project was opened
   counts?: Partial<Record<Status, number>>;
 }
+
+// ---------- For hooks ----------
 
 const KEY = "huddle:projects";
 const EVENT = "huddle:projects-changed";
@@ -25,6 +28,8 @@ export function subscribeIndex(cb: () => void): () => void {
   };
 }
 
+// ---------- Helper functions ----------
+
 /** localStorage is missing on the server then can throw */
 function store(): Storage | null {
   try {
@@ -38,6 +43,7 @@ function isSummary(value: unknown): value is ProjectSummary {
   if (typeof value !== "object" || value === null) return false;
 
   const v = value as Record<string, unknown>;
+
   // return true if all condition passed
   return (
     typeof v.id === "string" &&
@@ -53,7 +59,9 @@ function isSummary(value: unknown): value is ProjectSummary {
 
 /** Parse the raw index string. */
 export function parseIndex(raw: string | null): ProjectSummary[] {
-  if (!raw) return [];
+  if (!raw) {
+    return [];
+  }
 
   try {
     const parsed: unknown = JSON.parse(raw);
@@ -63,8 +71,33 @@ export function parseIndex(raw: string | null): ProjectSummary[] {
   }
 }
 
+/** Opened projects only, most recently opened first so hook can share it. */
+export function sortRecent(projects: ProjectSummary[], limit = 5): ProjectSummary[] {
+  return projects
+    .filter((p) => p.lastOpenedAt !== undefined)
+    .sort((a, b) => (b.lastOpenedAt ?? 0) - (a.lastOpenedAt ?? 0))
+    .slice(0, limit);
+}
+
+// ---------- Basically setter/getter ----------
+
+/** get all project summary */
 function read(): ProjectSummary[] {
   return parseIndex(store()?.getItem(KEY) ?? null);
+}
+
+/** Most recently changed first. */
+export function listProjects(): ProjectSummary[] {
+  return read().sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+/** get specific project summary */
+export function getProjectSummary(id: string): ProjectSummary | undefined {
+  return read().find((p) => p.id === id);
+}
+
+export function listRecentProjects(limit = 5): ProjectSummary[] {
+  return sortRecent(read(), limit);
 }
 
 /** save the proj summary to localstorage (only the title, id and dates to compare - other data is stored in the indexedDB) */
@@ -79,19 +112,11 @@ function write(projects: ProjectSummary[]): void {
   }
 }
 
-/** Most recently changed first. */
-export function listProjects(): ProjectSummary[] {
-  return read().sort((a, b) => b.updatedAt - a.updatedAt);
-}
-
-export function getProjectSummary(id: string): ProjectSummary | undefined {
-  return read().find((p) => p.id === id);
-}
-
 /** Merges into any existing entry, so a title update never erases lastOpenedAt. */
 export function upsertProject(patch: Partial<ProjectSummary> & { id: string }): void {
   const all = read();
   const existing = all.find((p) => p.id === patch.id);
+
   // combine existing and new patch to make a new merge entry
   const merged = { title: "", updatedAt: Date.now(), ...existing, ...patch };
 
@@ -100,19 +125,9 @@ export function upsertProject(patch: Partial<ProjectSummary> & { id: string }): 
 }
 
 export function markProjectOpened(id: string): void {
-  if (getProjectSummary(id)) upsertProject({ id, lastOpenedAt: Date.now() });
-}
-
-/** Opened projects only, most recently opened first so hook can share it. */
-export function sortRecent(projects: ProjectSummary[], limit = 5): ProjectSummary[] {
-  return projects
-    .filter((p) => p.lastOpenedAt !== undefined)
-    .sort((a, b) => (b.lastOpenedAt ?? 0) - (a.lastOpenedAt ?? 0))
-    .slice(0, limit);
-}
-
-export function listRecentProjects(limit = 5): ProjectSummary[] {
-  return sortRecent(read(), limit);
+  if (getProjectSummary(id)) {
+    upsertProject({ id, lastOpenedAt: Date.now() });
+  }
 }
 
 export function removeProject(id: string): void {

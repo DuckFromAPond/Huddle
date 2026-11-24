@@ -13,6 +13,8 @@ import {
 
 const KEY_CHARS = /^[0-9A-Za-z]+$/;
 
+// ---------- Helper functions ----------
+
 /** True if `k` is an order key generateKeyBetween will accept. Keys from peers or files are untrusted. */
 function isValidKey(key: unknown): key is string {
   if (typeof key !== "string" || !KEY_CHARS.test(key)) return false;
@@ -40,6 +42,8 @@ function compareStrings(a: string, b: string): number {
 function compareCards(a: Card, b: Card): number {
   return compareStrings(a.order, b.order) || compareStrings(a.id, b.id);
 }
+
+// ---------- Getter/setter ----------
 
 function readCard(id: string, card: Y.Map<unknown>): Card {
   const description = card.get("description");
@@ -75,40 +79,6 @@ export function getCard(doc: Y.Doc, id: string): Card | undefined {
   return card ? readCard(id, card) : undefined;
 }
 
-/**
- * returns order key for dropping a card at `index` in a column
- * (index counts the cards as the user sees them, excluding the card being moved).
- */
-export function orderForIndex(
-  doc: Y.Doc,
-  status: Status,
-  index: number,
-  movingId?: string,
-): string {
-  const column = getCards(doc, status).filter((c) => c.id !== movingId);
-  const clamped = Math.max(0, Math.min(index, column.length));
-
-  // nearest valid key above the drop spot
-  let before: string | null = null;
-  for (let i = clamped - 1; i >= 0; i--) {
-    if (isValidKey(column[i]!.order)) {
-      before = column[i]!.order;
-      break;
-    }
-  }
-
-  // nearest valid key below it that is strictly greater (also handles equal keys)
-  let after: string | null = null;
-  for (const next of column.slice(clamped)) {
-    if (isValidKey(next.order) && (before === null || next.order > before)) {
-      after = next.order;
-      break;
-    }
-  }
-
-  return generateKeyBetween(before, after);
-}
-
 export function createCard(
   doc: Y.Doc,
   input: { status: Status; title: string; priority?: Priority; order?: string },
@@ -132,31 +102,6 @@ export function createCard(
   });
 
   return id;
-}
-
-/** status and order change in one transaction. Returns false if the card is gone. */
-export function moveCard(
-  doc: Y.Doc,
-  id: string,
-  status: Status,
-  order: string,
-  by: Author,
-): boolean {
-  const card = cardsMap(doc).get(id);
-  if (!card) return false;
-
-  const from = card.get("status");
-
-  doc.transact(() => {
-    card.set("status", status);
-    card.set("order", order);
-
-    if (isStatus(from) && from !== status) {
-      logEvent(card, by, { type: "status", from, to: status });
-    }
-  });
-
-  return true;
 }
 
 export function setPriority(doc: Y.Doc, id: string, priority: Priority, by: Author): boolean {
@@ -257,4 +202,65 @@ export function dropCard(
   const order = generateKeyBetween(prev, next);
 
   moveCard(doc, cardId, status, order, by);
+}
+
+// ---------- ordering manip ----------
+
+/**
+ * returns order key for dropping a card at `index` in a column
+ * (index counts the cards as the user sees them, excluding the card being moved).
+ */
+export function orderForIndex(
+  doc: Y.Doc,
+  status: Status,
+  index: number,
+  movingId?: string,
+): string {
+  const column = getCards(doc, status).filter((c) => c.id !== movingId);
+  const clamped = Math.max(0, Math.min(index, column.length));
+
+  // nearest valid key above the drop spot
+  let before: string | null = null;
+  for (let i = clamped - 1; i >= 0; i--) {
+    if (isValidKey(column[i]!.order)) {
+      before = column[i]!.order;
+      break;
+    }
+  }
+
+  // nearest valid key below it that is strictly greater (also handles equal keys)
+  let after: string | null = null;
+  for (const next of column.slice(clamped)) {
+    if (isValidKey(next.order) && (before === null || next.order > before)) {
+      after = next.order;
+      break;
+    }
+  }
+
+  return generateKeyBetween(before, after);
+}
+
+/** status and order change in one transaction. Returns false if the card is gone. */
+export function moveCard(
+  doc: Y.Doc,
+  id: string,
+  status: Status,
+  order: string,
+  by: Author,
+): boolean {
+  const card = cardsMap(doc).get(id);
+  if (!card) return false;
+
+  const from = card.get("status");
+
+  doc.transact(() => {
+    card.set("status", status);
+    card.set("order", order);
+
+    if (isStatus(from) && from !== status) {
+      logEvent(card, by, { type: "status", from, to: status });
+    }
+  });
+
+  return true;
 }

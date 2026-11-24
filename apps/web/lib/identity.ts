@@ -31,6 +31,8 @@ function store(): Storage | null {
   }
 }
 
+// ---------- helper functions ----------
+
 /** Peer data is untrusted: only plain #rrggbb colours reach `style`. */
 export function safeColor(color: unknown): string {
   return typeof color === "string" && HEX.test(color) ? color : "#547076";
@@ -56,6 +58,8 @@ export function parseIdentity(raw: string | null): Author | null {
   }
 }
 
+// ---------- For hooks ----------
+
 /** get user detail (selected color & name) as raw string, so useSyncExternalStore compares by value in hook. */
 export function getIdentitySnapshot(): string | null {
   return store()?.getItem(KEY) ?? (fallback ? JSON.stringify(fallback) : null);
@@ -70,6 +74,8 @@ export function subscribeIdentity(cb: () => void): () => void {
     window.removeEventListener("storage", cb);
   };
 }
+
+// ---------- Get / Set ----------
 
 export function setIdentity(identity: Author): void {
   // user input

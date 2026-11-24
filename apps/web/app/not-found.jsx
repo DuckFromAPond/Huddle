@@ -1,14 +1,13 @@
-import { Container } from "@/components/ui/container";
 import { Title, Text } from "@/components/ui/typography";
 
 // TODO not found page + error page to be done
 export default function NotFound() {
   return (
-    <Container className="flex m-auto flex-col pt-36 items-center justify-center gap-2">
+    <div className="flex flex-1 rounded-md bg-background p-4 m-auto flex-col pt-36 items-center justify-center gap-2">
       <Title className="text-2xl font-semibold">404: Project not found</Title>
       <Text className="text-muted-foreground">
         This project doesn&apos;t exist or the link is broken.
       </Text>
-    </Container>
+    </div>
   );
 }

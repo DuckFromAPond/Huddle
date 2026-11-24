@@ -284,7 +284,10 @@ describe("schema gate on open", () => {
 
   it("upgrades an older project on open without counting it as an edit", async () => {
     const p = await createProject("Old", fast);
-    p.doc.getMap("meta").set("schemaVersion", SCHEMA_VERSION - 1);
+    p.doc.transact(() => {
+      p.doc.getMap("versions").delete(String(SCHEMA_VERSION)); // older apps never wrote this map
+      p.doc.getMap("meta").set("schemaVersion", SCHEMA_VERSION - 1);
+    });
     await p.close();
     const before = getProjectSummary(p.id)!.updatedAt;
 

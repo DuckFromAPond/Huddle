@@ -24,6 +24,11 @@ export function changeTheme(
   const looksSame = root.classList.contains("dark") === (resolved === "dark");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  if (looksSame || reduceMotion || !document.startViewTransition) apply();
-  else document.startViewTransition(apply);
+  // instantly apply changes if condtitions met
+  if (looksSame || reduceMotion || !document.startViewTransition) {
+    apply();
+  } else {
+    // takes a snapshot of the page, runs apply(), takes a second snapshot, and smoothly cross-fades between the two
+    document.startViewTransition(apply);
+  }
 }

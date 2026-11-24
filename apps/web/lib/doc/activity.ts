@@ -18,6 +18,7 @@ export type NewCardEvent = DistributiveOmit<CardEvent, "by" | "at">;
 
 const MAX_ACTIVITY = 100; // comments don't count toward this cap
 
+/** clean up old activities */
 function trimActivity(log: Y.Array<CardEvent>) {
   const events = log.toArray();
   let excess = events.filter((e) => e.type !== "comment").length - MAX_ACTIVITY;
@@ -33,7 +34,9 @@ function trimActivity(log: Y.Array<CardEvent>) {
   }
 
   // delete from the end, so the earlier indexes are still correct
-  for (const i of toDelete.reverse()) log.delete(i, 1);
+  for (const i of toDelete.reverse()) {
+    log.delete(i, 1);
+  }
 }
 
 // Create the array when the card is created, never lazily:

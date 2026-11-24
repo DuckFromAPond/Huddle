@@ -12,38 +12,66 @@ import {
 
 export const MAX_TITLE_LENGTH = 80;
 
-// meta map has the title and version
+/** meta map has the title and version */
 function metaMap(doc: Y.Doc): Y.Map<unknown> {
   return doc.getMap<unknown>("meta");
 }
 
+// ---------- Schema ----------
+
 /**
- * A project that exists has meta(data). A doc with no meta is empty: either a user joining
- * who has not received the first sync yet, or an id that was never created here.
+ * Every app version that has written to this doc, as keys ("1", "2", ...).
+ * Top-level, so concurrent writes from different app versions MERGE (both keys survive)
+ * instead of one overwriting the other. The doc's effective version is the highest key.
  */
-export function isInitialized(doc: Y.Doc): boolean {
-  return typeof metaMap(doc).get("schemaVersion") === "number";
+function versionsMap(doc: Y.Doc): Y.Map<true> {
+  return doc.getMap<true>("versions");
 }
 
-/** An older doc opened by this newer app: raise its version so older apps stop editing it. */
-export function upgradeSchema(doc: Y.Doc): void {
-  const v = metaMap(doc).get("schemaVersion");
-  if (typeof v === "number" && v < SCHEMA_VERSION) {
-    metaMap(doc).set("schemaVersion", SCHEMA_VERSION);
+/** Highest version seen, from the versions map or the older single `meta.schemaVersion`. */
+function schemaVersionOf(doc: Y.Doc): number | undefined {
+  let max: number | undefined;
+
+  const legacy = metaMap(doc).get("schemaVersion");
+  if (Number.isInteger(legacy)) max = legacy as number;
+
+  for (const key of versionsMap(doc).keys()) {
+    const v = Number(key);
+    if (Number.isInteger(v) && (max === undefined || v > max)) max = v;
   }
+  return max;
+}
+
+/** Record this app's version. Call inside a transaction. */
+function markVersion(doc: Y.Doc): void {
+  versionsMap(doc).set(String(SCHEMA_VERSION), true);
+  // mirror for apps that only read meta.schemaVersion; drop once none are left
+  metaMap(doc).set("schemaVersion", SCHEMA_VERSION);
+}
+
+export function isInitialized(doc: Y.Doc): boolean {
+  return schemaVersionOf(doc) !== undefined;
+}
+
+/** An older doc opened by this newer app: record our version so older apps stop editing it. */
+export function upgradeSchema(doc: Y.Doc): void {
+  const v = schemaVersionOf(doc);
+  if (v !== undefined && v < SCHEMA_VERSION) doc.transact(() => markVersion(doc));
 }
 
 /** True when a newer Huddle has touched this doc. This app must not edit it: it would misread new values. */
 export function isNewerThanApp(doc: Y.Doc): boolean {
-  const v = metaMap(doc).get("schemaVersion");
-  return typeof v === "number" && v > SCHEMA_VERSION;
+  const v = schemaVersionOf(doc);
+  return v !== undefined && v > SCHEMA_VERSION;
 }
+
+// ---------- Project ----------
+
 /** Only for brand-new projects. Joiners must never call this */
 export function initProject(doc: Y.Doc, title: string): void {
   doc.transact(() => {
-    const meta = metaMap(doc);
-    meta.set("title", title);
-    meta.set("schemaVersion", SCHEMA_VERSION);
+    metaMap(doc).set("title", title);
+    markVersion(doc);
   });
 }
 

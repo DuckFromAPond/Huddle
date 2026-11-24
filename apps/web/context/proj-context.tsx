@@ -24,14 +24,22 @@ export function useProject(): OpenProject {
 /** False when this app must not write to the open project (a newer Huddle has updated it). */
 export function useCanEdit(): boolean {
   const { doc } = useProject();
+
   const subscribe = useCallback(
     (cb: () => void) => {
       const meta = doc.getMap("meta");
+      const versions = doc.getMap("versions");
       meta.observe(cb);
-      return () => meta.unobserve(cb);
+      versions.observe(cb);
+
+      return () => {
+        meta.unobserve(cb);
+        versions.unobserve(cb);
+      };
     },
     [doc],
   );
+
   return useSyncExternalStore(
     subscribe,
     () => !isNewerThanApp(doc),

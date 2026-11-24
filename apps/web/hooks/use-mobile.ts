@@ -1,6 +1,6 @@
 import * as React from "react";
 
-// Must match Tailwind's 'md' breakpoint (48rem)
+// must match Tailwind's 'md' breakpoint (48rem)
 const MOBILE_BREAKPOINT_REM = 48;
 export const MOBILE_QUERY = `(width < ${MOBILE_BREAKPOINT_REM}rem)`;
 

@@ -20,8 +20,8 @@ import {
 import { getCards } from "@/lib/doc/cards";
 import { STATUSES, type Status, type Author } from "@/lib/schema";
 
-// BROWSER ONLY. Call these from client components (inside useEffect), never during
-// server rendering: IndexedDB does not exist on the server.
+// BROWSER ONLY. Call these from client components (inside useEffect),
+// never during server rendering since IndexedDB does not exist on the server.
 
 const dbName = (id: string) => `huddle-project-${id}`;
 const DEFAULT_INDEX_DEBOUNCE_MS = 300;
@@ -43,7 +43,7 @@ export interface OpenProject {
   flushIndex(): void;
   /** Flush, then release IndexedDB and the doc. Always call this on unmount. */
   close(): Promise<void>;
-  /** A newer Huddle has updated this project. Show it read-only and ask the user to reload. */
+  /** For when a newer Huddle has updated this project. Show it as read-only and ask the user to reload. */
   tooNew: boolean;
 }
 
@@ -55,6 +55,8 @@ export interface OpenProject {
 export async function openProject(id: string, options: OpenOptions = {}): Promise<OpenProject> {
   const delay = options.indexDebounceMs ?? DEFAULT_INDEX_DEBOUNCE_MS;
   const doc = new Y.Doc(); // initialize a doc for writing data to storage
+
+  // yjs-indexeddb set up
   const persistence = new IndexeddbPersistence(dbName(id), doc);
   await persistence.whenSynced;
 
@@ -91,6 +93,7 @@ export async function openProject(id: string, options: OpenOptions = {}): Promis
     timer = setTimeout(writeIndex, delay);
   };
 
+  // upgrade schema when for new version of project
   const tooNew = isNewerThanApp(doc);
   if (existedLocally && !tooNew) {
     upgradeSchema(doc);

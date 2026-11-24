@@ -152,7 +152,7 @@ function SearchBar({ className }: React.ComponentProps<"div">) {
         role="listbox"
         aria-label="Projects"
         hidden={!showList}
-        className="absolute top-full z-30 mt-2 w-full overflow-clip rounded-[14px] border bg-popover py-1 shadow-md"
+        className="absolute top-full z-30 m-2 w-full overflow-clip rounded-[14px] border bg-popover shadow-md"
       >
         {results.map((p, i) => (
           <li

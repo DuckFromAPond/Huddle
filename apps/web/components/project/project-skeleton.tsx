@@ -1,11 +1,14 @@
-import { Container } from "@/components/ui/container";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PROJECT_GRID } from "./project-list";
 
 /** Same layout as the projects page, so nothing shifts when the list arrives. */
 export function ProjectListSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <Container className="p-6 pt-4" aria-busy="true" aria-label="Loading projects">
+    <div
+      className="flex flex-1 flex-col rounded-md bg-background p-6 pt-4"
+      aria-busy="true"
+      aria-label="Loading projects"
+    >
       {/* header: title + Import / New project */}
       <div className="flex items-start justify-between pb-4">
         <Skeleton className="h-8 w-32" />
@@ -25,6 +28,6 @@ export function ProjectListSkeleton({ count = 8 }: { count?: number }) {
           </li>
         ))}
       </ul>
-    </Container>
+    </div>
   );
 }
