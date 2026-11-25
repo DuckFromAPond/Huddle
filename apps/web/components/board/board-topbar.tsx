@@ -69,8 +69,8 @@ function ProjectTitle() {
 /** Floating corners over the board: back to projects + title (left), you (right). */
 export function BoardTopbar() {
   return (
-    <div className="flex shrink-0 items-start justify-between p-3">
-      <div className="flex items-center gap-2 rounded-xl border bg-card py-1 pr-3 pl-1 shadow-sm backdrop-blur">
+    <div className="flex min-w-0 shrink-0 items-start justify-between p-3">
+      <div className="flex min-w-0 items-center gap-2 rounded-xl border bg-card py-1 pr-3 pl-1 shadow-sm backdrop-blur">
         <Link
           href="/projects"
           aria-label="Back to your projects"

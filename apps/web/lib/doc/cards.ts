@@ -204,7 +204,7 @@ export function dropCard(
   moveCard(doc, cardId, status, order, by);
 }
 
-// ---------- ordering manip ----------
+// ---------- ordering manipulation ----------
 
 /**
  * returns order key for dropping a card at `index` in a column
@@ -263,4 +263,28 @@ export function moveCard(
   });
 
   return true;
+}
+
+// ---------- for alt moving ----------
+
+/** Move a card one slot up (-1) or down (+1) in its column. False at the edges or if the card is gone. */
+export function nudgeCard(doc: Y.Doc, id: string, step: -1 | 1, by: Author): boolean {
+  const card = getCard(doc, id);
+  if (!card) return false;
+  const ids = getCards(doc, card.status).map((c) => c.id);
+  const to = ids.indexOf(id) + step;
+  if (to < 0 || to >= ids.length) return false; // already at the top/bottom: write nothing
+  return moveCard(doc, id, card.status, orderForIndex(doc, card.status, to, id), by);
+}
+
+/** Move a card to the top or bottom of a column (menus, mobile, keyboard: the non-drag path). */
+export function moveCardToColumn(
+  doc: Y.Doc,
+  id: string,
+  status: Status,
+  at: "top" | "bottom",
+  by: Author,
+): boolean {
+  if (!getCard(doc, id)) return false;
+  return moveCard(doc, id, status, orderForIndex(doc, status, at === "top" ? 0 : Infinity, id), by);
 }

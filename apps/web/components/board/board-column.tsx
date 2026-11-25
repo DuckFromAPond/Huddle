@@ -15,11 +15,13 @@ export function BoardColumn({
   cards,
   canEdit,
   highlighted,
+  onOpenCard,
 }: {
   status: Status;
   cards: Card[];
   canEdit: boolean;
   highlighted: boolean;
+  onOpenCard: (id: string) => void;
 }) {
   const headingId = useId();
 
@@ -38,7 +40,11 @@ export function BoardColumn({
       ref={ref}
       aria-labelledby={headingId}
       className={cn(
-        "flex max-h-full min-w-64 max-w-md flex-1 basis-0 flex-col rounded-xl p-2 transition-colors",
+        "relative flex max-h-full flex-col rounded-xl p-2 transition-colors",
+        // mobile: one column per screen, with a peek of the next
+        "w-[85vw] shrink-0 snap-start",
+        // tablet and up: your current fluid columns
+        "md:w-auto md:min-w-64 md:max-w-md md:flex-1 md:basis-0 md:shrink",
         highlighted && "bg-accent/60",
       )}
     >
@@ -60,6 +66,8 @@ export function BoardColumn({
             index={index}
             column={status}
             disabled={!canEdit}
+            isLast={index === cards.length - 1}
+            onOpen={onOpenCard}
           />
         ))}
 

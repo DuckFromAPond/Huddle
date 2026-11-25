@@ -3,10 +3,10 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { SettingsProvider } from "@/components/settings/settings-dialog";
 
-import { DM_Sans, Lora, Geist_Mono } from "next/font/google";
+import { Bricolage_Grotesque, DM_Sans, Geist_Mono } from "next/font/google";
 
+const bricolage = Bricolage_Grotesque({ variable: "--font-display", subsets: ["latin"] });
 const dmSans = DM_Sans({ variable: "--font-dm-sans", subsets: ["latin"] });
-const lora = Lora({ variable: "--font-lora", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${dmSans.variable} ${lora.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${bricolage.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider

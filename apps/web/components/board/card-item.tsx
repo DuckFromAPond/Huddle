@@ -17,7 +17,7 @@ export function CardItem({ card }: { card: Card }) {
       : null;
 
   return (
-    <article className="grid gap-2 rounded-lg bg-card p-3 shadow-xs transition-[box-shadow] duration-150 hover:border-input hover:shadow-sm motion-reduce:transition-none">
+    <article className="grid gap-2 rounded-lg bg-card p-3 shadow-xs transition-[box-shadow] duration-150 ease-out hover:shadow-md motion-reduce:transition-none dark:ring-1 dark:ring-white/5">
       <h3
         className={cn(
           "line-clamp-3 text-sm break-words",
