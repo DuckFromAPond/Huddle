@@ -22,7 +22,10 @@ function store(): Storage | null {
 }
 
 export function parsePreferences(raw: string | null): Preferences {
-  if (!raw) return DEFAULT_PREFERENCES;
+  if (!raw) {
+    return DEFAULT_PREFERENCES;
+  }
+
   try {
     const v = JSON.parse(raw) as Partial<Record<keyof Preferences, unknown>>;
     // keep only known keys with the right type; anything else falls back to the default

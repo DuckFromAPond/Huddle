@@ -32,9 +32,12 @@ export function Board() {
   const canEdit = useCanEdit();
   const cards = useCards(doc);
 
+  // map card into a map of id with card
   const cardById = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
 
+  // place cards into respective status column
   const docColumns = useMemo(() => {
+    // make status to be key of cols object
     const cols = Object.fromEntries(STATUSES.map((s) => [s, [] as string[]])) as Columns;
     for (const card of cards) {
       // cards are already in display order
@@ -43,12 +46,14 @@ export function Board() {
     return cols;
   }, [cards]);
 
+  // for react to render preview
   const [preview, setPreview] = useState<Columns | null>(null);
   const previewRef = useRef<Columns | null>(null);
   const updatePreview = (next: Columns | null) => {
     previewRef.current = next;
     setPreview(next);
   };
+
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const columns = preview ?? docColumns;
@@ -59,23 +64,28 @@ export function Board() {
   const { cardId, openCard, closeCard } = useCardParam();
   const openedCard = cardId ? cardById.get(cardId) : undefined;
 
-  // Screen-reader announcements use card titles and column names, not random ids.
-  // They read the latest data through a ref, so the plugin is configured only once.
   const lookup = useRef({ cardById, columns });
 
   useEffect(() => {
     lookup.current = { cardById, columns };
   });
 
+  // Screen-reader announcements use card titles and column names, not random ids.
+  // They read the latest data through a ref, so the plugin is configured only once.
   const plugins = useMemo(() => {
     const titleOf = (id: unknown) => lookup.current.cardById.get(String(id))?.title || "card";
+
     const columnOf = (id: unknown) => {
       const { columns } = lookup.current;
+
       const col = STATUSES.includes(id as Status)
         ? (id as Status)
         : STATUSES.find((s) => columns[s].includes(String(id)));
+
       return col ? STATUS_LABELS[col] : undefined;
     };
+
+    // configure accessiblity with dnd-dom
     const accessibility = Accessibility.configure({
       announcements: {
         dragstart: ({ operation }: DragStartEvent) => `Picked up ${titleOf(operation.source?.id)}.`,
@@ -85,7 +95,9 @@ export function Board() {
         },
         dragend: ({ operation, canceled }: DragEndEvent) => {
           const title = titleOf(operation.source?.id);
-          if (canceled) return `Cancelled. ${title} went back to where it was.`;
+          if (canceled) {
+            return `Cancelled. ${title} went back to where it was.`;
+          }
           const col = columnOf(operation.target?.id);
           return col ? `Dropped ${title} in ${col}.` : `Dropped ${title}.`;
         },
@@ -95,6 +107,7 @@ export function Board() {
           "Press Enter to open a card. To move it, press Space to pick it up, use the arrow keys to move it within or between columns, then press Space to drop it. Press Escape to cancel.",
       },
     });
+
     // replace the default accessibility plugin, keep every other default
     return (defaults: Plugins): Plugins => [
       ...defaults.filter(
@@ -104,7 +117,7 @@ export function Board() {
     ];
   }, []);
 
-  // dnd-kit's default uses both Space and Enter to pick up; keep Space, free Enter for opening
+  // dnd-kit's default uses both Space and Enter to pick up so keep Space, free Enter for opening
   const sensors = useMemo(
     () =>
       (defaults: Sensors): Sensors => [
@@ -125,7 +138,17 @@ export function Board() {
             return [new PointerActivationConstraints.Distance({ value: 5 })];
           },
         }),
-        KeyboardSensor.configure({/* your existing keyboardCodes */}),
+        KeyboardSensor.configure({
+          keyboardCodes: {
+            start: ["Space"], // Enter is free for opening the card detail
+            cancel: ["Escape"],
+            end: ["Space", "Tab"],
+            up: ["ArrowUp"],
+            down: ["ArrowDown"],
+            left: ["ArrowLeft"],
+            right: ["ArrowRight"],
+          },
+        }),
       ],
     [],
   );

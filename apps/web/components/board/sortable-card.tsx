@@ -11,7 +11,7 @@ import { motion, useMotionValue, useReducedMotion, useSpring } from "motion/reac
 import { CardMenu } from "@/components/board/card-menu";
 
 const MAX_TILT = 6; // degrees
-const TILT_PER_SPEED = 4; // degrees per (px/ms); a brisk 1.5 px/ms drag hits the cap
+const TILT_PER_SPEED = 4; // degrees per (px/ms);
 
 /**
  * A draggable card.

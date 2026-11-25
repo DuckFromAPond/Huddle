@@ -16,10 +16,18 @@ import {
 } from "@/lib/doc/cards";
 import { applyTextDiff } from "@/lib/doc/detail";
 import type { CardEvent } from "@/lib/doc/activity";
-import { STATUS_LABELS, STATUSES, type Card, type Priority, type Status } from "@/lib/schema";
+import {
+  STATUS_LABELS,
+  STATUSES,
+  PRIORITIES,
+  PRIORITY_LABELS,
+  type Card,
+  type Priority,
+  type Status,
+} from "@/lib/schema";
 import { getIdentity } from "@/lib/identity";
 import { Button } from "@/components/ui/button";
-import { Muted } from "@/components/ui/typography";
+import { Muted, Text, Title } from "@/components/ui/typography";
 import {
   Sheet,
   SheetContent,
@@ -28,24 +36,33 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
-// adjust if your Priority type uses different values
-const PRIORITY_LABELS: Record<Priority, string> = {
-  none: "No priority",
-  low: "Low",
-  medium: "Medium",
-  high: "High",
-  urgent: "Urgent",
-};
-
+// calculate time ago for activity log
 const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+const dateFmt = new Intl.DateTimeFormat(undefined, {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
 function timeAgo(ms: number) {
   const min = Math.round((ms - Date.now()) / 60_000);
-  if (min > -1) return "just now";
-  if (min > -60) return rtf.format(min, "minute");
+  if (min > -1) {
+    return "just now";
+  }
+
+  if (min > -60) {
+    return rtf.format(min, "minute");
+  }
+
   const h = Math.round(min / 60);
-  return h > -24 ? rtf.format(h, "hour") : rtf.format(Math.round(h / 24), "day");
+  if (h > -24) {
+    return rtf.format(h, "hour");
+  }
+
+  const d = Math.round(h / 24);
+  return d > -30 ? rtf.format(d, "day") : dateFmt.format(ms);
 }
 
+// for deciding activity log
 function describe(e: CardEvent): string {
   switch (e.type) {
     case "created":
@@ -65,26 +82,20 @@ function describe(e: CardEvent): string {
   }
 }
 
+// helper to guard new Date(e.at).toISOString
+function isoOrUndefined(ms: number) {
+  const d = new Date(ms);
+  return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
+}
+
 const fieldClass =
   "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60";
 
-/** Side panel for one card. Renders nothing when no card is open. */
-export function CardDetail({ card, onClose }: { card: Card | undefined; onClose: () => void }) {
-  return (
-    <Sheet open={!!card} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent
-        side="right"
-        className="flex w-full flex-col gap-6 overflow-y-auto p-6 sm:max-w-md"
-      >
-        {card && <CardFields key={card.id} card={card} onDeleted={onClose} />}
-      </SheetContent>
-    </Sheet>
-  );
-}
-
+// fields for detail component
 function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) {
   const { doc } = useProject();
   const canEdit = useCanEdit();
+
   const ids = { title: useId(), status: useId(), priority: useId(), description: useId() };
 
   const description = getDescription(doc, card.id);
@@ -101,7 +112,9 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
 
   function commitTitle(value: string) {
     const title = value.trim();
-    if (title && title !== card.title) setTitle(doc, card.id, title, getIdentity());
+    if (title && title !== card.title) {
+      setTitle(doc, card.id, title, getIdentity());
+    }
   }
 
   function changeStatus(status: Status) {
@@ -142,7 +155,7 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-1.5">
           <label htmlFor={ids.status} className="text-xs font-medium text-muted-foreground">
-            Column
+            Column (status)
           </label>
           <select
             id={ids.status}
@@ -158,6 +171,7 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
             ))}
           </select>
         </div>
+
         <div className="grid gap-1.5">
           <label htmlFor={ids.priority} className="text-xs font-medium text-muted-foreground">
             Priority
@@ -169,7 +183,7 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
             onChange={(e) => setPriority(doc, card.id, e.target.value as Priority, getIdentity())}
             className={fieldClass}
           >
-            {(Object.keys(PRIORITY_LABELS) as Priority[]).map((p) => (
+            {PRIORITIES.map((p) => (
               <option key={p} value={p}>
                 {PRIORITY_LABELS[p]}
               </option>
@@ -180,7 +194,7 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
 
       <div className="grid gap-1.5">
         <label htmlFor={ids.description} className="text-xs font-medium text-muted-foreground">
-          Description
+          Description/Notes
         </label>
         <textarea
           id={ids.description}
@@ -209,9 +223,13 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
       )}
 
       <section aria-labelledby={`${ids.title}-activity`} className="grid gap-3">
-        <h3 id={`${ids.title}-activity`} className="text-xs font-medium text-muted-foreground">
+        <Title
+          as="h3"
+          id={`${ids.title}-activity`}
+          className="text-xs font-medium text-muted-foreground"
+        >
           Activity
-        </h3>
+        </Title>
         {activity.length === 0 ? (
           <Muted>No activity yet.</Muted>
         ) : (
@@ -223,15 +241,38 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
                   className="mt-1.5 size-2 shrink-0 rounded-full"
                   style={{ backgroundColor: e.by.color }}
                 />
-                <p>
-                  <span className="font-medium">{e.by.name}</span> {describe(e)}
-                  <span className="text-muted-foreground"> · {timeAgo(e.at)}</span>
-                </p>
+
+                <Text>
+                  <span className="font-medium">{e.by.name}</span>
+
+                  {describe(e)}
+
+                  <span className="text-muted-foreground">
+                    {" · "}
+                    <time dateTime={isoOrUndefined(e.at)} title={isoOrUndefined(e.at)}>
+                      {timeAgo(e.at)}
+                    </time>
+                  </span>
+                </Text>
               </li>
             ))}
           </ol>
         )}
       </section>
     </>
+  );
+}
+
+/** Side panel for one card. Renders nothing when no card is open. */
+export function CardDetail({ card, onClose }: { card: Card | undefined; onClose: () => void }) {
+  return (
+    <Sheet open={!!card} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent
+        side="right"
+        className="flex w-full flex-col gap-6 overflow-y-auto p-6 sm:max-w-md"
+      >
+        {card && <CardFields key={card.id} card={card} onDeleted={onClose} />}
+      </SheetContent>
+    </Sheet>
   );
 }

@@ -1,4 +1,5 @@
 import { ArrowUp, ChevronsUp } from "lucide-react";
+import { PRIORITY_LABELS } from "@/lib/schema";
 import type { Card } from "@/lib/schema";
 import { cn } from "@/lib/utils";
 
@@ -9,7 +10,6 @@ const SHOWN_PRIORITY = {
 } as const;
 
 /** The compact card in a column. */
-// TODO Clicking will open the detail panel
 export function CardItem({ card }: { card: Card }) {
   const priority =
     card.priority in SHOWN_PRIORITY
@@ -30,7 +30,7 @@ export function CardItem({ card }: { card: Card }) {
         // icon + word, so the priority isn't shown by color alone
         <p className={cn("flex items-center gap-1 text-xs font-medium", priority.className)}>
           <priority.icon className="size-3.5" aria-hidden="true" />
-          {priority.label}
+          {PRIORITY_LABELS[card.priority]}
         </p>
       )}
     </article>

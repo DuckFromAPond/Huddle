@@ -21,7 +21,7 @@ export function useProject(): OpenProject {
   return project;
 }
 
-/** False when this app must not write to the open project (a newer Huddle has updated it). */
+/** False when app must not write to the open project (a newer Huddle has updated it). */
 export function useCanEdit(): boolean {
   const { doc } = useProject();
 
