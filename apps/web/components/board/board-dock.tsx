@@ -9,7 +9,10 @@ import { importProject } from "@/lib/storage/projects";
 import { getIdentity } from "@/lib/identity";
 import { Button } from "@/components/ui/button";
 import { HoverGroup } from "@/components/layout/hover-group";
-import { BoardMenu } from "@/components/board/board-menu";
+import { BoardMenu } from "@/components/board/board-nav-menu";
+import { Text } from "@/components/ui/typography";
+import { BoardViewMenu } from "@/components/board/board-view-menu";
+import { motion, useReducedMotion } from "motion/react";
 
 /** Floating bar at the bottom of the board: ☰ menu, Add card, Search. */
 export function BoardDock({
@@ -34,15 +37,17 @@ export function BoardDock({
   const searchRef = useRef<HTMLInputElement>(null);
   const searchButtonRef = useRef<HTMLButtonElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const reduceMotion = useReducedMotion();
+  const refocusButton = useRef(false); // put focus back on the search button after closing
 
   function openSearch() {
-    setSearchOpen(true);
-    requestAnimationFrame(() => searchRef.current?.focus());
+    setSearchOpen(true); // the input focuses itself on mount (autoFocus)
   }
+
   function closeSearch() {
     onQueryChange("");
+    refocusButton.current = true; // the button focuses itself once it is back
     setSearchOpen(false);
-    requestAnimationFrame(() => searchButtonRef.current?.focus());
   }
 
   // "/" opens search, unless the user is typing somewhere
@@ -53,7 +58,6 @@ export function BoardDock({
         return;
       e.preventDefault();
       setSearchOpen(true);
-      requestAnimationFrame(() => searchRef.current?.focus());
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -103,12 +107,12 @@ export function BoardDock({
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex flex-col items-center gap-2 px-4">
       {error && (
-        <p
+        <Text
           role="alert"
           className="pointer-events-auto rounded-lg bg-destructive px-3 py-1.5 text-sm text-destructive-foreground shadow-md"
         >
           {error}
-        </p>
+        </Text>
       )}
 
       <div
@@ -116,7 +120,7 @@ export function BoardDock({
         aria-label="Board tools"
         className="pointer-events-auto rounded-xl border bg-background/90 p-1 shadow-md backdrop-blur"
       >
-        <HoverGroup className="flex items-center gap-1">
+        <HoverGroup className="flex items-center gap-1" highlightClassName="bg-secondary-hover">
           <BoardMenu
             currentId={id}
             onImport={() => fileRef.current?.click()}
@@ -129,10 +133,12 @@ export function BoardDock({
             className="mx-0.5 h-5 w-px bg-border"
           />
 
+          {/* note: a button for add is somewhat redundant but can be useful for phone */}
           {canEdit && (
             <Button
               data-hover-item
               variant="ghost"
+              className="hover:bg-transparent dark:hover:bg-transparent"
               size="icon-sm"
               aria-label="Add card"
               onClick={onAddCard}
@@ -140,12 +146,17 @@ export function BoardDock({
               <Plus className="size-4" aria-hidden="true" />
             </Button>
           )}
-
           {searchOpen ? (
-            <div className="flex items-center gap-1 pl-1">
-              <Search className="size-4 text-muted-foreground" aria-hidden="true" />
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="flex items-center gap-1 pl-1.5"
+            >
+              <Search className="shrink-0 size-4 text-muted-foreground" aria-hidden="true" />
               <input
                 ref={searchRef}
+                autoFocus
                 type="search"
                 aria-label="Search cards on this board"
                 placeholder="Search cards…"
@@ -159,9 +170,11 @@ export function BoardDock({
                 }}
                 className="field-sizing-content max-w-56 min-w-36 bg-transparent px-1 py-1 text-sm outline-none [&::-webkit-search-cancel-button]:appearance-none"
               />
+
               <span className="text-xs whitespace-nowrap text-muted-foreground" aria-live="polite">
                 {query.trim() && `${matchCount} of ${totalCount}`}
               </span>
+
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -170,12 +183,13 @@ export function BoardDock({
               >
                 <X className="size-4" aria-hidden="true" />
               </Button>
-            </div>
+            </motion.div>
           ) : (
             <Button
               ref={searchButtonRef}
               data-hover-item
               variant="ghost"
+              className="hover:bg-transparent dark:hover:bg-transparent"
               size="icon-sm"
               aria-label="Search cards"
               aria-keyshortcuts="/"
@@ -184,6 +198,8 @@ export function BoardDock({
               <Search className="size-4" aria-hidden="true" />
             </Button>
           )}
+
+          <BoardViewMenu />
         </HoverGroup>
       </div>
 

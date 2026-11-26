@@ -16,12 +16,16 @@ export function BoardColumn({
   canEdit,
   highlighted,
   onOpenCard,
+  adding,
+  onAddingChange,
 }: {
   status: Status;
   cards: Card[];
   canEdit: boolean;
   highlighted: boolean;
   onOpenCard: (id: string) => void;
+  adding: boolean;
+  onAddingChange: (open: boolean) => void;
 }) {
   const headingId = useId();
 
@@ -58,7 +62,7 @@ export function BoardColumn({
         <span className="sr-only">{cards.length} cards</span>
       </header>
 
-      <ul className="flex min-h-0 flex-col gap-2 overflow-y-auto overflow-x-hidden p-2 [scrollbar-gutter:stable]">
+      <ul className="flex min-h-0 flex-col gap-2 overflow-y-auto overflow-x-hidden p-2 [scrollbar-gutter:stable] in-data-compact:gap-1">
         {cards.map((card, index) => (
           <SortableCard
             key={card.id}
@@ -78,7 +82,7 @@ export function BoardColumn({
         )}
       </ul>
 
-      <AddCard status={status} />
+      <AddCard status={status} open={adding} onOpenChange={onAddingChange} />
     </section>
   );
 }

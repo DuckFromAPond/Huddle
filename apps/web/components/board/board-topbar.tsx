@@ -15,7 +15,7 @@ function ProjectTitle() {
   const [editing, setEditing] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const style = "max-w-xs truncate font-serif text-sm font-medium";
+  const style = "max-w-xs truncate font-display text-sm font-medium";
   if (!canEdit) return <span className={style}>{title}</span>;
 
   function finish(value?: string) {
@@ -60,7 +60,7 @@ function ProjectTitle() {
         }}
         onBlur={(e) => finish(e.currentTarget.value)}
         aria-label="Project name"
-        className="field-sizing-content min-w-24 max-w-xs rounded-md bg-secondary px-1.5 py-0.5 font-serif text-sm font-medium outline-none"
+        className="field-sizing-content min-w-24 max-w-xs rounded-md bg-secondary px-1.5 py-0.5 font-display text-sm font-medium outline-none"
       />
     </form>
   );

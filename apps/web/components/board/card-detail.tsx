@@ -123,6 +123,8 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
     moveCard(doc, card.id, status, orderForIndex(doc, status, Infinity, card.id), getIdentity());
   }
 
+  // TODO refine later
+
   return (
     <>
       <SheetHeader className="p-0">
@@ -201,7 +203,9 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
           value={descriptionValue}
           readOnly={!canEdit || !description}
           placeholder={canEdit ? "Add more detail…" : "No description"}
-          onChange={(e) => description && applyTextDiff(description, e.target.value)}
+          onChange={(e) =>
+            description && applyTextDiff(description, descriptionValue, e.target.value)
+          }
           className={`${fieldClass} min-h-24 resize-none field-sizing-content max-h-96`}
         />
       </div>

@@ -53,16 +53,20 @@ export function SortableCard({
 
   // dnd-kit stops pointer events from reaching window during a drag,
   // so read the movement from dnd-kit itself
+  // this movement helps in creating swing motion when moved
   useDragDropMonitor({
     onDragMove(event) {
       if (reduceMotion || event.operation.source?.id !== card.id) return; // only the held card
+
       const x = event.operation.position.current.x;
       const t = performance.now();
       const prev = last.current;
+
       if (prev && t > prev.t) {
-        const speed = (x - prev.x) / (t - prev.t); // px per ms, signed
+        const speed = (x - prev.x) / (t - prev.t); // px per ms
         swingTarget.set(Math.max(-MAX_TILT, Math.min(MAX_TILT, speed * TILT_PER_SPEED)));
       }
+
       last.current = { x, t };
       clearTimeout(settle.current);
       settle.current = setTimeout(() => swingTarget.set(0), 80); // stopped moving: ease back
@@ -102,6 +106,7 @@ export function SortableCard({
           "relative touch-manipulation rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring",
           !disabled && "cursor-grab active:cursor-grabbing",
         )}
+
         // opening detail
         onPointerDown={() => {
           dragged.current = false; // a new press starts clean

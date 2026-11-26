@@ -20,10 +20,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     <OpenSettingsContext.Provider value={() => setOpen(true)}>
       {children}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[85dvh] gap-8 overflow-y-auto p-8 sm:max-w-xl">
-          <DialogHeader className="gap-1.5">
+        <DialogContent className="max-h-[85dvh] gap-4 overflow-y-auto p-8 sm:max-w-xl">
+          <DialogHeader>
             <DialogTitle>Settings</DialogTitle>
-            <DialogDescription>Your name, color and theme. Saved on this device.</DialogDescription>
+            <DialogDescription>Your name, color and theme, saved on this device.</DialogDescription>
           </DialogHeader>
           <SettingsContent />
         </DialogContent>

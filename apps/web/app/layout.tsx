@@ -5,7 +5,7 @@ import { SettingsProvider } from "@/components/settings/settings-dialog";
 
 import { Bricolage_Grotesque, DM_Sans, Geist_Mono } from "next/font/google";
 
-const bricolage = Bricolage_Grotesque({ variable: "--font-display", subsets: ["latin"] });
+const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"] });
 const dmSans = DM_Sans({ variable: "--font-dm-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 

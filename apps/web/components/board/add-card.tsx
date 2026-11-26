@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Plus } from "lucide-react";
 import { useCanEdit, useProject } from "@/context/proj-context";
 import { createCard } from "@/lib/doc/cards";
@@ -10,10 +10,17 @@ import { Muted } from "@/components/ui/typography";
 import { Input } from "@/components/ui/input";
 
 /** "Add card" button that turns into an input. Enter adds and stays open for the next card; Escape closes. */
-export function AddCard({ status }: { status: Status }) {
+export function AddCard({
+  status,
+  open,
+  onOpenChange,
+}: {
+  status: Status;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const { doc } = useProject();
   const canEdit = useCanEdit();
-  const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   if (!canEdit) return null; // read-only: the banner explains why
@@ -27,7 +34,7 @@ export function AddCard({ status }: { status: Status }) {
 
   // closes the input and puts focus back on the button
   function close() {
-    setOpen(false);
+    onOpenChange(false);
     // the button mounts on the next render; focus it once it exists
     requestAnimationFrame(() => buttonRef.current?.focus());
   }
@@ -36,7 +43,7 @@ export function AddCard({ status }: { status: Status }) {
     return (
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => onOpenChange(true)}
         className="mt-1 flex items-center gap-1.5 cursor-pointer rounded-lg px-2 py-2 text-sm text-muted-foreground hover:bg-secondary-hover hover:text-foreground"
       >
         <Plus className="size-4" aria-hidden="true" />

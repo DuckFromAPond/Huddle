@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import { useOpenProject } from "@/hooks/use-open-project";
 import { ProjectProvider } from "@/context/proj-context";
@@ -8,10 +9,13 @@ import { Board } from "@/components/board/board";
 import { Heading, Muted } from "@/components/ui/typography";
 import { Loader2 } from "lucide-react";
 import { BoardTopbar } from "@/components/board/board-topbar";
+import { cn } from "@/lib/utils";
+import { usePreferences } from "@/hooks/use-preferences";
 
 export default function BoardPage() {
   const { id } = useParams<{ id: string }>();
   const state = useOpenProject(id);
+  const prefs = usePreferences();
 
   if (state.status === "loading") {
     return (
@@ -28,31 +32,43 @@ export default function BoardPage() {
   }
 
   if (state.status !== "ready") {
+    const notFound = state.status === "not-found";
+
     return (
-      <div className="grid h-full place-content-center gap-3 text-center">
+      <main className="grid min-h-svh place-content-center justify-items-center gap-3 p-6 text-center">
         <Heading as="h1">
-          {state.status === "not-found"
-            ? "This project isn't on this device"
-            : "Couldn't open this project"}
+          {notFound ? "This project isn't on this device" : "Couldn't open this project"}
         </Heading>
         <Muted>
-          {state.status === "not-found"
+          {notFound
             ? "It may have been deleted, or it was shared with you and sharing isn't set up yet."
             : "Your browser may be blocking storage, for example in a private window."}
         </Muted>
-        <Link href="/projects" className="text-sm underline underline-offset-4">
-          Back to your projects
-        </Link>
-      </div>
+
+        <div className="flex gap-2 pt-4">
+          {!notFound && <Button onClick={() => location.reload()}>Try again</Button>}
+          <Link
+            href="/projects"
+            className={buttonVariants({ variant: notFound ? "default" : "secondary" })}
+          >
+            Back to your projects
+          </Link>
+        </div>
+      </main>
     );
   }
 
   return (
     <ProjectProvider value={state.project}>
-      <div className="flex h-svh flex-col">
+      <div
+        className={cn(
+          "flex h-svh flex-col",
+          prefs.dotBackground &&
+            "bg-[radial-gradient(var(--color-border)_1px,transparent_0)] bg-size-[18px_18px]",
+        )}
+      >
         <BoardTopbar />
         <Board />
-        {/* <BoardDock />  */}
       </div>
     </ProjectProvider>
   );

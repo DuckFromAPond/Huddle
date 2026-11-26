@@ -1,6 +1,9 @@
 "use client";
 
+// react and next
 import { useEffect, useMemo, useRef, useState } from "react";
+
+// movement with dnd-kit and motion
 import { DragDropProvider } from "@dnd-kit/react";
 import {
   Accessibility,
@@ -14,16 +17,22 @@ import {
 import { move } from "@dnd-kit/helpers";
 import type { Plugins, Sensors } from "@dnd-kit/abstract";
 import { MotionConfig } from "motion/react";
+
+// lib, hooks, and context
 import { useCanEdit, useProject } from "@/context/proj-context";
 import { useCards } from "@/hooks/use-card";
+import { usePreferences } from "@/hooks/use-preferences";
 import { dropCard } from "@/lib/doc/cards";
 import { STATUS_LABELS, STATUSES, type Card, type Status } from "@/lib/schema";
 import { getIdentity } from "@/lib/identity";
+import { cn } from "@/lib/utils";
+
+// component
 import { OutdatedBanner } from "@/components/project/outdated-banner";
 import { BoardColumn } from "@/components/board/board-column";
-import { cn } from "@/lib/utils";
 import { useCardParam } from "@/hooks/use-card-param";
 import { CardDetail } from "@/components/board/card-detail";
+import { BoardDock } from "@/components/board/board-dock";
 
 type Columns = Record<Status, string[]>;
 
@@ -60,6 +69,18 @@ export function Board() {
   const dragging = preview !== null;
   const targetColumn =
     preview && activeId ? STATUSES.find((s) => preview[s].includes(activeId)) : undefined;
+
+  const prefs = usePreferences();
+  const [addingTo, setAddingTo] = useState<Status | null>(null); /// which column's Add card input is open
+
+  const [query, setQuery] = useState("");
+  const cleanQuery = query.trim().toLowerCase();
+
+  const isVisible = (card: Card) => !cleanQuery || card.title.toLowerCase().includes(cleanQuery);
+  const matchCount = cleanQuery ? cards.filter(isVisible).length : cards.length;
+
+  // no dragging while searching: hidden cards would make the drop position wrong
+  const canDrag = canEdit && !cleanQuery;
 
   const { cardId, openCard, closeCard } = useCardParam();
   const openedCard = cardId ? cardById.get(cardId) : undefined;
@@ -140,7 +161,7 @@ export function Board() {
         }),
         KeyboardSensor.configure({
           keyboardCodes: {
-            start: ["Space"], // Enter is free for opening the card detail
+            start: ["Space"], // Enter is freed for opening the card detail
             cancel: ["Escape"],
             end: ["Space", "Tab"],
             up: ["ArrowUp"],
@@ -155,7 +176,10 @@ export function Board() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="flex min-h-0 flex-1 flex-col">
+      <div
+        data-compact={prefs.compactCards || undefined}
+        className="relative flex min-h-0 flex-1 flex-col"
+      >
         {!canEdit && (
           <div className="px-6 pb-3">
             <OutdatedBanner />
@@ -170,6 +194,7 @@ export function Board() {
             setActiveId(String(event.operation.source?.id ?? ""));
             updatePreview(docColumns);
           }}
+          // when hovering over a column, let react render it and not dnd-kit
           onDragOver={(event) => {
             if (!previewRef.current) return;
             // React moves the card (even into another column), so React's record of the page stays true
@@ -182,7 +207,10 @@ export function Board() {
             if (!event.canceled && cols && canEdit) {
               const id = String(event.operation.source?.id ?? "");
               const to = STATUSES.find((s) => cols[s].includes(id));
-              if (to) dropCard(doc, id, to, cols[to], getIdentity()); // writes nothing if unchanged
+              if (to) {
+                // writes nothing if unchanged
+                dropCard(doc, id, to, cols[to], getIdentity());
+              }
             }
             updatePreview(null); // the doc now holds the same order, so nothing jumps
             setActiveId(null);
@@ -198,11 +226,15 @@ export function Board() {
           >
             {STATUSES.map((status) => (
               <BoardColumn
-                highlighted={targetColumn === status}
                 key={status}
                 status={status}
-                cards={columns[status].map((id) => cardById.get(id)).filter((c): c is Card => !!c)}
-                canEdit={canEdit}
+                cards={columns[status]
+                  .map((id) => cardById.get(id))
+                  .filter((c): c is Card => !!c && isVisible(c))}
+                canEdit={canDrag} // no dragging while searching
+                adding={addingTo === status}
+                onAddingChange={(open) => setAddingTo(open ? status : null)}
+                highlighted={targetColumn === status}
                 onOpenCard={openCard}
               />
             ))}
@@ -210,6 +242,14 @@ export function Board() {
         </DragDropProvider>
         {/* closes itself if the open card is deleted */}
         <CardDetail card={openedCard} onClose={closeCard} />
+        <BoardDock
+          canEdit={canEdit}
+          onAddCard={() => setAddingTo(STATUSES[0])}
+          query={query}
+          onQueryChange={setQuery}
+          matchCount={matchCount}
+          totalCount={cards.length}
+        />
       </div>
     </MotionConfig>
   );

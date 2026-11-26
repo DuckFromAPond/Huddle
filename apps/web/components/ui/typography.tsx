@@ -13,9 +13,9 @@ function Title({ as: Tag = "h1", className, ...props }: HeadingProps) {
   return <Tag className={cn("text-2xl font-semibold tracking-tight", className)} {...props} />;
 }
 
-/** A project's name on its board: the one place the serif appears. */
+/** A project's name on its board. */
 function ProjTitle({ as: Tag = "h1", className, ...props }: HeadingProps) {
-  return <Tag className={cn("font-serif text-2xl font-medium", className)} {...props} />;
+  return <Tag className={cn("font-display text-2xl font-medium", className)} {...props} />;
 }
 
 /** Section and card titles. */

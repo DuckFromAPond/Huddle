@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design tokens
+ * Design notes
  * Type scale in use: text-xs (12) · text-sm (14) · text-base (16) · text-2xl (24).
  * Corners: rounded-lg (= --radius, 6px) for controls, rounded-xl (~8px) for cards.
  * Colors: warm neutral base + one accent (Antwerp Blue).
@@ -181,6 +181,7 @@
   /* No global h1/h2/p styles: text styles come from components/ui/typography.tsx */
 }
 
+/* testing on dropdown popout */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation-duration: 200ms;

@@ -2,7 +2,6 @@
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { IdentityForm } from "@/components/layout/identity-form";
-import { Muted } from "@/components/ui/typography";
 import { useIdentity } from "@/hooks/use-identity";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { safeColor } from "@/lib/identity";
@@ -41,7 +40,7 @@ export function IdentityMenu() {
         {initials(identity.name)}
       </PopoverTrigger>
 
-      <PopoverContent align="end" className="grid w-64 gap-4">
+      <PopoverContent align="end" sideOffset={6} className="grid w-64 gap-4">
         {/* Enter submits, and browsers already skip it while an IME is composing */}
         <IdentityForm identity={identity} />
 
@@ -49,7 +48,6 @@ export function IdentityMenu() {
           <span className="text-sm">Theme</span>
           <ThemeToggle />
         </div>
-        <Muted>Shown to people you share boards with, and on your changes in card history.</Muted>
       </PopoverContent>
     </Popover>
   );
