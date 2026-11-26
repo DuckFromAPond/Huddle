@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRecentProjects } from "@/hooks/use-recent-projects";
+import { DockTip } from "@/components/board/dock-tooltip";
 
 /** The board's ☰ menu: navigation and file actions */
 export function BoardMenu({
@@ -29,20 +30,21 @@ export function BoardMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            data-hover-item
-            variant="ghost"
-            className="hover:bg-transparent dark:hover:bg-transparent"
-            size="icon-sm"
-            aria-label="Menu"
-          />
-        }
-      >
-        <Menu className="size-4" aria-hidden="true" />
-      </DropdownMenuTrigger>
-
+      <DockTip label="Menu">
+        <DropdownMenuTrigger
+          render={
+            <Button
+              data-hover-item
+              variant="ghost"
+              className="hover:bg-transparent dark:hover:bg-transparent"
+              size="icon-sm"
+              aria-label="Menu"
+            />
+          }
+        >
+          <Menu className="size-4" aria-hidden="true" />
+        </DropdownMenuTrigger>
+      </DockTip>
       <DropdownMenuContent side="top" align="start" sideOffset={10} className="w-32">
         <DropdownMenuItem render={<Link href="/projects" />}>
           <Home className="size-4" aria-hidden="true" /> All projects

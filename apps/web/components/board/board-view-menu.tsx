@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { usePreferences } from "@/hooks/use-preferences";
 import { setPreference } from "@/lib/preferences";
+import { DockTip } from "@/components/board/dock-tooltip";
 
 /** Board preferences/view toggles. Ticking keeps the menu open. */
 export function BoardViewMenu() {
@@ -19,19 +20,21 @@ export function BoardViewMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            data-hover-item
-            variant="ghost"
-            size="icon-sm"
-            aria-label="View options"
-            className="hover:bg-transparent dark:hover:bg-transparent"
-          />
-        }
-      >
-        <SlidersHorizontal className="size-4" aria-hidden="true" />
-      </DropdownMenuTrigger>
+      <DockTip label="Preferences">
+        <DropdownMenuTrigger
+          render={
+            <Button
+              data-hover-item
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Preferences"
+              className="hover:bg-transparent dark:hover:bg-transparent"
+            />
+          }
+        >
+          <SlidersHorizontal className="size-4" aria-hidden="true" />
+        </DropdownMenuTrigger>
+      </DockTip>
 
       <DropdownMenuContent side="top" align="start" sideOffset={10} className="w-40">
         <DropdownMenuGroup>

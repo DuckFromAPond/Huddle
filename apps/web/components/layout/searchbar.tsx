@@ -55,42 +55,27 @@ function SearchBar({ className }: React.ComponentProps<"div">) {
         select(pick.id);
       }
     } else if (e.key === "Escape") {
+      e.preventDefault();
       setOpen(false);
+      setQuery("");
+      // go back to where "/" was pressed, or just leave the field
+      const back = returnFocus.current;
+      returnFocus.current = null;
+      if (back && back !== document.body && document.contains(back)) back.focus();
+      else inputRef.current?.blur();
     }
   }
 
+  // "/" jumps to search from anywhere, unless the user is typing somewhere
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault(); // stop the browser's own Ctrl+K
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      } else if (e.key === "Escape") {
-        e.preventDefault();
-        setOpen(false);
-        setQuery("");
-        // go back to where Ctrl+K was pressed, or just leave the field
-        const back = returnFocus.current;
-        returnFocus.current = null;
-        if (back && back !== document.body && document.contains(back)) back.focus();
-        else inputRef.current?.blur();
-      }
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        // remember where the user was, unless they're already in the search
-        if (document.activeElement !== inputRef.current) {
-          returnFocus.current = document.activeElement as HTMLElement | null;
-        }
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      }
+      if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
+      if ((e.target as HTMLElement).closest("input, textarea, select, [contenteditable='true']"))
+        return;
+      e.preventDefault();
+      returnFocus.current = document.activeElement as HTMLElement | null;
+      inputRef.current?.focus();
+      inputRef.current?.select();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -127,7 +112,7 @@ function SearchBar({ className }: React.ComponentProps<"div">) {
 
       {!query && (
         <kbd className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 rounded border bg-background px-1.5 text-xs text-muted-foreground">
-          Ctrl K
+          /
         </kbd>
       )}
 

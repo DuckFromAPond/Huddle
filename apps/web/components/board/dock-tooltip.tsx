@@ -16,7 +16,12 @@ export function DockTip({
       <TooltipContent side="top" sideOffset={8} className="flex items-center gap-2">
         {label}
         {shortcut && (
-          <kbd className="rounded border px-1 text-xs text-muted-foreground">{shortcut}</kbd>
+          <kbd
+            data-slot="kbd"
+            className="rounded-sm bg-background/20 px-1.5 font-mono text-[10px] text-background"
+          >
+            {shortcut}
+          </kbd>
         )}
       </TooltipContent>
     </Tooltip>

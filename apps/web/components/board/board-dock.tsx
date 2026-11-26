@@ -12,6 +12,8 @@ import { HoverGroup } from "@/components/layout/hover-group";
 import { BoardMenu } from "@/components/board/board-nav-menu";
 import { Text } from "@/components/ui/typography";
 import { BoardViewMenu } from "@/components/board/board-view-menu";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { DockTip } from "@/components/board/dock-tooltip";
 import { motion, useReducedMotion } from "motion/react";
 
 /** Floating bar at the bottom of the board: ☰ menu, Add card, Search. */
@@ -120,87 +122,98 @@ export function BoardDock({
         aria-label="Board tools"
         className="pointer-events-auto rounded-xl border bg-background/90 p-1 shadow-md backdrop-blur"
       >
-        <HoverGroup className="flex items-center gap-1" highlightClassName="bg-secondary-hover">
-          <BoardMenu
-            currentId={id}
-            onImport={() => fileRef.current?.click()}
-            onExport={handleExport}
-          />
+        <TooltipProvider delay={150}>
+          <HoverGroup className="flex items-center gap-1" highlightClassName="bg-secondary-hover">
+            <BoardMenu
+              currentId={id}
+              onImport={() => fileRef.current?.click()}
+              onExport={handleExport}
+            />
 
-          <span
-            role="separator"
-            aria-orientation="vertical"
-            className="mx-0.5 h-5 w-px bg-border"
-          />
+            <span
+              role="separator"
+              aria-orientation="vertical"
+              className="mx-0.5 h-5 w-px bg-border"
+            />
 
-          {/* note: a button for add is somewhat redundant but can be useful for phone */}
-          {canEdit && (
-            <Button
-              data-hover-item
-              variant="ghost"
-              className="hover:bg-transparent dark:hover:bg-transparent"
-              size="icon-sm"
-              aria-label="Add card"
-              onClick={onAddCard}
-            >
-              <Plus className="size-4" aria-hidden="true" />
-            </Button>
-          )}
-          {searchOpen ? (
-            <motion.div
-              initial={reduceMotion ? false : { opacity: 0, x: -6 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-              className="flex items-center gap-1 pl-1.5"
-            >
-              <Search className="shrink-0 size-4 text-muted-foreground" aria-hidden="true" />
-              <input
-                ref={searchRef}
-                autoFocus
-                type="search"
-                aria-label="Search cards on this board"
-                placeholder="Search cards…"
-                value={query}
-                onChange={(e) => onQueryChange(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") {
-                    e.preventDefault();
-                    closeSearch();
-                  }
-                }}
-                className="field-sizing-content max-w-56 min-w-36 bg-transparent px-1 py-1 text-sm outline-none [&::-webkit-search-cancel-button]:appearance-none"
-              />
-
-              <span className="text-xs whitespace-nowrap text-muted-foreground" aria-live="polite">
-                {query.trim() && `${matchCount} of ${totalCount}`}
-              </span>
-
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Close search"
-                onClick={closeSearch}
+            {/* note: a button for add is somewhat redundant but can be useful for phone */}
+            {canEdit && (
+              <DockTip label="Add card">
+                <Button
+                  data-hover-item
+                  variant="ghost"
+                  className="hover:bg-transparent dark:hover:bg-transparent"
+                  size="icon-sm"
+                  aria-label="Add card"
+                  onClick={onAddCard}
+                >
+                  <Plus className="size-4" aria-hidden="true" />
+                </Button>
+              </DockTip>
+            )}
+            {searchOpen ? (
+              <motion.div
+                initial={reduceMotion ? false : { opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="flex items-center gap-1 pl-1.5"
               >
-                <X className="size-4" aria-hidden="true" />
-              </Button>
-            </motion.div>
-          ) : (
-            <Button
-              ref={searchButtonRef}
-              data-hover-item
-              variant="ghost"
-              className="hover:bg-transparent dark:hover:bg-transparent"
-              size="icon-sm"
-              aria-label="Search cards"
-              aria-keyshortcuts="/"
-              onClick={openSearch}
-            >
-              <Search className="size-4" aria-hidden="true" />
-            </Button>
-          )}
+                <Search className="shrink-0 size-4 text-muted-foreground" aria-hidden="true" />
+                <input
+                  ref={searchRef}
+                  autoFocus
+                  type="search"
+                  aria-label="Search cards on this board"
+                  placeholder="Search cards…"
+                  value={query}
+                  onChange={(e) => onQueryChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      e.preventDefault();
+                      closeSearch();
+                    }
+                  }}
+                  className="field-sizing-content max-w-56 min-w-36 bg-transparent px-1 py-1 text-sm outline-none [&::-webkit-search-cancel-button]:appearance-none"
+                />
 
-          <BoardViewMenu />
-        </HoverGroup>
+                <span
+                  className="text-xs whitespace-nowrap text-muted-foreground"
+                  aria-live="polite"
+                >
+                  {query.trim() && `${matchCount} of ${totalCount}`}
+                </span>
+
+                <DockTip label="Close search" shortcut="Esc">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Close search"
+                    onClick={closeSearch}
+                  >
+                    <X className="size-4" aria-hidden="true" />
+                  </Button>
+                </DockTip>
+              </motion.div>
+            ) : (
+              <DockTip label="Search cards" shortcut="/">
+                <Button
+                  ref={searchButtonRef}
+                  data-hover-item
+                  variant="ghost"
+                  className="hover:bg-transparent dark:hover:bg-transparent"
+                  size="icon-sm"
+                  aria-label="Search cards"
+                  aria-keyshortcuts="/"
+                  onClick={openSearch}
+                >
+                  <Search className="size-4" aria-hidden="true" />
+                </Button>
+              </DockTip>
+            )}
+
+            <BoardViewMenu />
+          </HoverGroup>
+        </TooltipProvider>
       </div>
 
       <input
