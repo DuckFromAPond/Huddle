@@ -5,7 +5,7 @@ import { useEffect, useId, useState, useRef, useLayoutEffect } from "react";
 import { Trash2 } from "lucide-react";
 import { useCanEdit, useProject } from "@/context/proj-context";
 import { useCardActivity } from "@/hooks/use-card-activity";
-import { useYText } from "@/hooks/use-detail";
+import { useYText } from "@/hooks/use-y-text";
 import {
   cardsMap,
   deleteCard,
@@ -166,7 +166,7 @@ function ActivityItem({ event, doc }: { event: CardEvent; doc: Y.Doc }) {
 function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) {
   const { doc } = useProject();
   const canEdit = useCanEdit();
-  const columns = useColumns();
+  const columns = useColumns(doc);
 
   const ids = { title: useId(), status: useId(), priority: useId(), description: useId() };
 

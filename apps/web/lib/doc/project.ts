@@ -16,6 +16,17 @@ function metaMap(doc: Y.Doc): Y.Map<unknown> {
   return doc.getMap<unknown>("meta");
 }
 
+export function observeVersion(doc: Y.Doc, cb: () => void): () => void {
+  const meta = doc.getMap("meta");
+  const versions = doc.getMap("versions");
+  meta.observe(cb);
+  versions.observe(cb);
+  return () => {
+    meta.unobserve(cb);
+    versions.unobserve(cb);
+  };
+}
+
 // ---------- Schema ----------
 
 /**

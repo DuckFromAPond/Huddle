@@ -3,6 +3,7 @@ import { useCallback, useSyncExternalStore } from "react";
 import type * as Y from "yjs";
 import { getProjectTitle } from "@/lib/doc/project";
 
+/** watches project title to re-render on change */
 export function useProjectTitle(doc: Y.Doc): string {
   const subscribe = useCallback(
     (onChange: () => void) => {

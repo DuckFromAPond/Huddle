@@ -27,7 +27,7 @@ export function CardMenu({
   isLast: boolean;
 }) {
   const { doc } = useProject();
-  const columns = useColumns();
+  const columns = useColumns(doc);
   const canEdit = useCanEdit();
   if (!canEdit) return null;
 

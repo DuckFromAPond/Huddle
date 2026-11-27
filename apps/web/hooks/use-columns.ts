@@ -1,10 +1,11 @@
+"use client";
+
 import { useCallback, useSyncExternalStore } from "react";
-import { useProject } from "@/context/proj-context";
 import { getColumns, type Column } from "@/lib/doc/columns";
+import * as Y from "yjs";
 
 /** The project's columns, live. Reads the doc from context, so callers need nothing. */
-export function useColumns(): Column[] {
-  const { doc } = useProject();
+export function useColumns(doc: Y.Doc): Column[] {
   const subscribe = useCallback(
     (onChange: () => void) => {
       const map = doc.getMap("columns");

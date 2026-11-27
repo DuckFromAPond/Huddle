@@ -8,6 +8,7 @@ export function useYText(text: Y.Text | undefined): string {
   const subscribe = useCallback(
     (onChange: () => void) => {
       if (!text) return () => {};
+
       text.observe(onChange);
       return () => text.unobserve(onChange);
     },

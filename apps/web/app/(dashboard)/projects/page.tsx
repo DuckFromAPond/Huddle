@@ -13,7 +13,7 @@ import { Text } from "@/components/ui/typography";
 
 import { createProject, importProject, type OpenProject } from "@/lib/storage/projects";
 import { ImportError } from "@/lib/doc/project";
-import { useProjectList } from "@/hooks/use-projects";
+import { useProjectList } from "@/hooks/use-project-list";
 import { getIdentity } from "@/lib/identity";
 import { projectPath } from "@/lib/routes";
 import { requestPersistentStorage } from "@/lib/storage/persist";

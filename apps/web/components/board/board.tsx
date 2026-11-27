@@ -20,7 +20,7 @@ import { MotionConfig } from "motion/react";
 
 // lib, hooks, and context
 import { useCanEdit, useProject } from "@/context/proj-context";
-import { useCards } from "@/hooks/use-card";
+import { useCards } from "@/hooks/use-cards";
 import { usePreferences } from "@/hooks/use-preferences";
 import { dropCard } from "@/lib/doc/cards";
 import { type Card, type ColumnId } from "@/lib/schema";
@@ -41,7 +41,7 @@ export function Board() {
   const { doc } = useProject();
   const canEdit = useCanEdit();
   const cards = useCards(doc);
-  const columnList = useColumns();
+  const columnList = useColumns(doc);
 
   // map card into a map of id with card
   const cardById = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);

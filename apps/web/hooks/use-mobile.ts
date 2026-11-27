@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 
 // must match Tailwind's 'md' breakpoint (48rem)

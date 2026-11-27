@@ -6,7 +6,7 @@ import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useProjectList } from "@/hooks/use-projects";
+import { useProjectList } from "@/hooks/use-project-list";
 import { useEffect } from "react";
 
 const MAX_RESULTS = 6;

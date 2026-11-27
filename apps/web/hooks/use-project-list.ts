@@ -1,4 +1,5 @@
 "use client";
+
 import { useMemo, useSyncExternalStore } from "react";
 import {
   getIndexSnapshot,
@@ -7,6 +8,7 @@ import {
   type ProjectSummary,
 } from "@/lib/storage/project-index";
 
+/** watches project list to re-render on change */
 export function useProjectList(): ProjectSummary[] | null {
   // read local storage and re-render when listener detect changes
   const raw = useSyncExternalStore(subscribeIndex, getIndexSnapshot, () => null);

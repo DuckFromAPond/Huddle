@@ -19,6 +19,9 @@ export function useCardActivity(card?: Y.Map<unknown>): CardEvent[] {
         return () => {};
       }
 
+      // anything may have changed since render: make React's post-subscribe check re-read
+      cache.delete(log);
+
       // handler deletes the cache on change
       const handler = () => {
         cache.delete(log);

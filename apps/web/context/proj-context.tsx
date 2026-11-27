@@ -3,7 +3,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useSyncExternalStore } from "react";
-import { isNewerThanApp } from "@/lib/doc/project";
+import { isNewerThanApp, observeVersion } from "@/lib/doc/project";
 import type { OpenProject } from "@/lib/storage/projects";
 
 const ProjectContext = createContext<OpenProject | null>(null);
@@ -27,15 +27,7 @@ export function useCanEdit(): boolean {
 
   const subscribe = useCallback(
     (cb: () => void) => {
-      const meta = doc.getMap("meta");
-      const versions = doc.getMap("versions");
-      meta.observe(cb);
-      versions.observe(cb);
-
-      return () => {
-        meta.unobserve(cb);
-        versions.unobserve(cb);
-      };
+      return observeVersion(doc, cb);
     },
     [doc],
   );
