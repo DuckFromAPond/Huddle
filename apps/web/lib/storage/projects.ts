@@ -18,7 +18,7 @@ import {
   upsertProject,
 } from "@/lib/storage/project-index";
 import { getCards } from "@/lib/doc/cards";
-import { STATUSES, type Status, type Author } from "@/lib/schema";
+import { DEFAULT_COLUMNS, type ColumnId, type Author } from "@/lib/schema";
 
 // BROWSER ONLY. Call these from client components (inside useEffect),
 // never during server rendering since IndexedDB does not exist on the server.
@@ -71,7 +71,10 @@ export async function openProject(id: string, options: OpenOptions = {}): Promis
     if (title === undefined) return;
 
     // set counts for each status
-    const counts = Object.fromEntries(STATUSES.map((s) => [s, 0])) as Record<Status, number>;
+    const counts = Object.fromEntries(DEFAULT_COLUMNS.map((c) => [c.id, 0])) as Record<
+      ColumnId,
+      number
+    >;
 
     // update count for each status
     for (const card of getCards(doc)) {

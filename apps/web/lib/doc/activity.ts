@@ -1,12 +1,12 @@
 import * as Y from "yjs";
-import type { Author, Priority, Status } from "@/lib/schema";
+import type { Author, Priority, ColumnId } from "@/lib/schema";
 
 type Base = { by: Author & { clientId: number }; at: number };
 
 // all possible case a card could appear in the activity log as
 export type CardEvent =
   | (Base & { type: "created" })
-  | (Base & { type: "status"; from: Status; to: Status })
+  | (Base & { type: "status"; from: ColumnId; to: ColumnId })
   | (Base & { type: "priority"; from: Priority; to: Priority })
   | (Base & { type: "renamed"; from: string; to: string })
   | (Base & { type: "comment"; text: string })

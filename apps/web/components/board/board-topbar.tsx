@@ -6,7 +6,8 @@ import { IdentityMenu } from "@/components/layout/identity-menu";
 import { useRef, useState } from "react";
 import { useCanEdit, useProject } from "@/context/proj-context";
 import { useProjectTitle } from "@/hooks/use-project-title";
-import { MAX_TITLE_LENGTH, setProjectTitle } from "@/lib/doc/project";
+import { MAX_TITLE_LENGTH } from "@/lib/schema";
+import { setProjectTitle } from "@/lib/doc/project";
 
 function ProjectTitle() {
   const { doc } = useProject();

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import * as Y from "yjs";
+import { useEffect, useId, useState, useRef, useLayoutEffect } from "react";
 import { Trash2 } from "lucide-react";
 import { useCanEdit, useProject } from "@/context/proj-context";
 import { useCardActivity } from "@/hooks/use-card-activity";
@@ -17,14 +18,15 @@ import {
 import { applyTextDiff } from "@/lib/doc/detail";
 import type { CardEvent } from "@/lib/doc/activity";
 import {
-  STATUS_LABELS,
-  STATUSES,
   PRIORITIES,
   PRIORITY_LABELS,
   type Card,
   type Priority,
-  type Status,
+  type ColumnId,
+  MAX_TITLE_LENGTH,
 } from "@/lib/schema";
+import { columnName } from "@/lib/doc/columns";
+import { useColumns } from "@/hooks/use-columns";
 import { getIdentity } from "@/lib/identity";
 import { Button } from "@/components/ui/button";
 import { Muted, Text, Title } from "@/components/ui/typography";
@@ -35,6 +37,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 // calculate time ago for activity log
 const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
@@ -63,18 +66,33 @@ function timeAgo(ms: number) {
 }
 
 // for deciding activity log
-function describe(e: CardEvent): string {
+function describe(e: CardEvent, doc: Y.Doc): React.ReactNode {
   switch (e.type) {
     case "created":
       return "created this card";
     case "imported":
       return "imported this card";
     case "status":
-      return `moved it from ${STATUS_LABELS[e.from as Status] ?? e.from} to ${STATUS_LABELS[e.to as Status] ?? e.to}`;
+      return (
+        <>
+          moved this card from <span className="text-primary">{columnName(doc, e.from)}</span> to{" "}
+          <span className="text-primary">{columnName(doc, e.to)}</span>
+        </>
+      );
     case "priority":
-      return `set priority to ${PRIORITY_LABELS[e.to as Priority] ?? e.to}`;
+      return (
+        <>
+          set priority to{" "}
+          <span className="text-primary">{PRIORITY_LABELS[e.to as Priority] ?? e.to}</span>
+        </>
+      );
     case "renamed":
-      return `renamed it from "${e.from}"`;
+      return (
+        <>
+          renamed this card from <span className="text-primary"> "{e.from}" </span> to{" "}
+          <span className="text-primary">“{e.to}”</span>
+        </>
+      );
     case "comment":
       return `commented: ${e.text}`;
     default:
@@ -91,10 +109,64 @@ function isoOrUndefined(ms: number) {
 const fieldClass =
   "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60";
 
+function ActivityItem({ event, doc }: { event: CardEvent; doc: Y.Doc }) {
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [clamped, setClamped] = useState(false);
+
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    if (!el || expanded) return; // while expanded, keep the button so "Show less" stays
+
+    // check if full text is longer than 2 lines, if so then show more button renders
+    const check = () => setClamped(el.scrollHeight > el.clientHeight + 1); // +1: sub-pixel rounding
+    check();
+
+    // the panel can change width (window resize, phone rotation), which changes the line count
+    const observer = new ResizeObserver(check);
+    observer.observe(el);
+
+    return () => observer.disconnect();
+  }, [expanded]);
+
+  return (
+    <li className="flex gap-2 text-sm pt-2">
+      <span
+        aria-hidden="true"
+        className="mt-1.5 size-2 shrink-0 rounded-full"
+        style={{ backgroundColor: event.by.color }}
+      />
+      <div className="min-w-0">
+        <Text ref={textRef} className={cn("text-sm wrap-anywhere", !expanded && "line-clamp-2")}>
+          <span className="font-medium">{event.by.name} </span>
+          {describe(event, doc)}
+          <span className="text-muted-foreground">
+            {" · "}
+            <time dateTime={isoOrUndefined(event.at)} title={isoOrUndefined(event.at)}>
+              {timeAgo(event.at)}
+            </time>
+          </span>
+        </Text>
+
+        {clamped && (
+          <Button
+            variant="link"
+            aria-expanded={expanded}
+            onClick={() => setExpanded((v) => !v)}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            {expanded ? "Show less" : "Show more"}
+          </Button>
+        )}
+      </div>
+    </li>
+  );
+}
 // fields for detail component
 function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) {
   const { doc } = useProject();
   const canEdit = useCanEdit();
+  const columns = useColumns();
 
   const ids = { title: useId(), status: useId(), priority: useId(), description: useId() };
 
@@ -117,7 +189,7 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
     }
   }
 
-  function changeStatus(status: Status) {
+  function changeStatus(status: ColumnId) {
     if (status === card.status) return;
     // dropdown alternative to dragging: goes to the bottom of the new column
     moveCard(doc, card.id, status, orderForIndex(doc, status, Infinity, card.id), getIdentity());
@@ -147,6 +219,7 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
             id={ids.title}
             name="title"
             defaultValue={card.title}
+            maxLength={MAX_TITLE_LENGTH}
             readOnly={!canEdit}
             onBlur={(e) => commitTitle(e.currentTarget.value)}
             className="w-full rounded-lg bg-transparent px-1 py-1 text-base font-semibold outline-none hover:bg-secondary focus-visible:bg-secondary focus-visible:ring-2 focus-visible:ring-ring"
@@ -163,12 +236,12 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
             id={ids.status}
             value={card.status}
             disabled={!canEdit}
-            onChange={(e) => changeStatus(e.target.value as Status)}
+            onChange={(e) => changeStatus(e.target.value)}
             className={fieldClass}
           >
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {STATUS_LABELS[s]}
+            {columns.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
               </option>
             ))}
           </select>
@@ -208,23 +281,23 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
           }
           className={`${fieldClass} min-h-24 resize-none field-sizing-content max-h-96`}
         />
-      </div>
 
-      {canEdit && (
-        <div className="mt-auto">
-          <Button
-            variant={"destructive"}
-            onClick={() => {
-              if (!confirmDelete) return setConfirmDelete(true);
-              deleteCard(doc, card.id);
-              onDeleted();
-            }}
-          >
-            <Trash2 className="size-4" aria-hidden="true" />
-            {confirmDelete ? "Click again to delete" : "Delete card"}
-          </Button>
-        </div>
-      )}
+        {canEdit && (
+          <div className="mt-4">
+            <Button
+              variant={"destructive"}
+              onClick={() => {
+                if (!confirmDelete) return setConfirmDelete(true);
+                deleteCard(doc, card.id);
+                onDeleted();
+              }}
+            >
+              <Trash2 className="size-4" aria-hidden="true" />
+              {confirmDelete ? "Click again to delete" : "Delete card"}
+            </Button>
+          </div>
+        )}
+      </div>
 
       <section aria-labelledby={`${ids.title}-activity`} className="grid gap-3">
         <Title
@@ -238,27 +311,12 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
           <Muted>No activity yet.</Muted>
         ) : (
           <ol className="grid gap-2.5">
-            {activity.map((e, i) => (
-              <li key={`${e.at}-${i}`} className="flex gap-2 text-sm">
-                <span
-                  aria-hidden="true"
-                  className="mt-1.5 size-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: e.by.color }}
-                />
-
-                <Text>
-                  <span className="font-medium">{e.by.name}</span>
-
-                  {describe(e)}
-
-                  <span className="text-muted-foreground">
-                    {" · "}
-                    <time dateTime={isoOrUndefined(e.at)} title={isoOrUndefined(e.at)}>
-                      {timeAgo(e.at)}
-                    </time>
-                  </span>
-                </Text>
-              </li>
+            {activity.map((event) => (
+              <ActivityItem
+                key={`${event.at}-${event.by.id}-${event.type}`}
+                event={event}
+                doc={doc}
+              />
             ))}
           </ol>
         )}

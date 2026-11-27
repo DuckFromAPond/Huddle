@@ -23,7 +23,7 @@ export function CardItem({ card }: { card: Card }) {
         as="h3"
         className={cn(
           "line-clamp-3 text-sm break-words",
-          card.status === "done" && "text-foreground/75",
+          card.status === "done" && "text-foreground/60",
         )}
       >
         {card.title || "Untitled"}

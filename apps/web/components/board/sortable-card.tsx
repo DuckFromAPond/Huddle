@@ -1,6 +1,6 @@
 "use client";
 
-import type { Card, Status } from "@/lib/schema";
+import type { Card, ColumnId } from "@/lib/schema";
 import { cn } from "@/lib/utils";
 import { CardItem } from "@/components/board/card-item";
 import { pointerIntersection } from "@dnd-kit/collision";
@@ -10,8 +10,8 @@ import { useSortable } from "@dnd-kit/react/sortable";
 import { motion, useMotionValue, useReducedMotion, useSpring } from "motion/react";
 import { CardMenu } from "@/components/board/card-menu";
 
-const MAX_TILT = 6; // degrees
-const TILT_PER_SPEED = 4; // degrees per (px/ms);
+const MAX_TILT = 8; // degrees
+const TILT_PER_SPEED = 5; // degrees per (px/ms);
 
 /**
  * A draggable card.
@@ -28,7 +28,7 @@ export function SortableCard({
 }: {
   card: Card;
   index: number;
-  column: Status;
+  column: ColumnId;
   disabled: boolean;
   isLast: boolean;
   onOpen: (id: string) => void;

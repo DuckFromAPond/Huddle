@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Download, Home, Menu, Upload } from "lucide-react";
+import { Download, Home, Menu, Upload, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,10 +20,12 @@ export function BoardMenu({
   currentId,
   onImport,
   onExport,
+  onDelete,
 }: {
   currentId: string;
   onImport: () => void;
   onExport: () => void;
+  onDelete: () => void;
 }) {
   const { recent } = useRecentProjects();
   const others = recent.filter((p) => p.id !== currentId);
@@ -67,6 +69,11 @@ export function BoardMenu({
         </DropdownMenuItem>
         <DropdownMenuItem onClick={onExport}>
           <Download className="size-4" aria-hidden="true" /> Export
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuItem variant="destructive" onClick={onDelete}>
+          <Trash2 className="size-4" aria-hidden="true" /> Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

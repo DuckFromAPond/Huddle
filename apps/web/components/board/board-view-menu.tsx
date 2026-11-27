@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,10 +18,11 @@ import { DockTip } from "@/components/board/dock-tooltip";
 /** Board preferences/view toggles. Ticking keeps the menu open. */
 export function BoardViewMenu() {
   const prefs = usePreferences();
+  const [open, setOpen] = useState(false);
 
   return (
-    <DropdownMenu>
-      <DockTip label="Preferences">
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DockTip label="Preferences" disabled={open}>
         <DropdownMenuTrigger
           render={
             <Button

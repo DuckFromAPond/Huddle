@@ -13,10 +13,10 @@ import {
   cardsMap,
 } from "@/lib/doc/cards";
 import { ada, fork, sync } from "@/tests/helpers";
-import { STATUSES, type Status } from "@/lib/schema";
+import { DEFAULT_COLUMNS, type ColumnId } from "@/lib/schema";
 
 /** Titles of one status's cards, in display order. */
-function titles(doc: Y.Doc, status: Status): string[] {
+function titles(doc: Y.Doc, status: ColumnId): string[] {
   return getCards(doc, status).map((c) => c.title);
 }
 
@@ -114,8 +114,8 @@ describe("getCards and getCard", () => {
     expect(getCard(doc, id)!.status).toBe("todo");
   });
 
-  it("only ever contains the known statuses", () => {
-    expect([...STATUSES]).toEqual(["todo", "in-progress", "done"]);
+  it("default column ids never change (cards store them)", () => {
+    expect(DEFAULT_COLUMNS.map((c) => c.id)).toEqual(["todo", "in-progress", "done"]);
   });
 });
 

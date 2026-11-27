@@ -1,4 +1,4 @@
-import type { Status } from "@/lib/schema";
+import type { ColumnId } from "@/lib/schema";
 
 // project summary used by the dashboard
 export interface ProjectSummary {
@@ -6,7 +6,7 @@ export interface ProjectSummary {
   title: string;
   updatedAt: number; // in ms since epoch, last time the CONTENT changed
   lastOpenedAt?: number; // in ms since epoch, last time the project was opened
-  counts?: Partial<Record<Status, number>>;
+  counts?: Partial<Record<ColumnId, number>>;
 }
 
 // ---------- For hooks ----------

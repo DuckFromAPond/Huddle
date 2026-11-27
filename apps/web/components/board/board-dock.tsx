@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Search, X } from "lucide-react";
 import { useProject } from "@/context/proj-context";
 import { exportProject, getProjectTitle, ImportError } from "@/lib/doc/project";
-import { importProject } from "@/lib/storage/projects";
+import { importProject, deleteProject } from "@/lib/storage/projects";
 import { getIdentity } from "@/lib/identity";
 import { Button } from "@/components/ui/button";
 import { HoverGroup } from "@/components/layout/hover-group";
@@ -14,6 +14,16 @@ import { Text } from "@/components/ui/typography";
 import { BoardViewMenu } from "@/components/board/board-view-menu";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { DockTip } from "@/components/board/dock-tooltip";
+import {
+  AlertDialog,
+  AlertDialogHeader,
+  AlertDialogDescription,
+  AlertDialogTitle,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogCancel,
+  AlertDialogFooter,
+} from "@/components/ui/alert-dialog";
 import { motion, useReducedMotion } from "motion/react";
 
 /** Floating bar at the bottom of the board: ☰ menu, Add card, Search. */
@@ -32,10 +42,12 @@ export function BoardDock({
   matchCount: number;
   totalCount: number;
 }) {
-  const { doc, id } = useProject();
+  const { doc, id, close } = useProject();
+  const [deleting, setDeleting] = useState(false);
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const searchButtonRef = useRef<HTMLButtonElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -50,6 +62,19 @@ export function BoardDock({
     onQueryChange("");
     refocusButton.current = true; // the button focuses itself once it is back
     setSearchOpen(false);
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await close(); // must come first, or the delete waits on the open connection
+      await deleteProject(id);
+      router.replace("/projects");
+    } catch {
+      setDeleting(false);
+      setConfirmDelete(false);
+      setError("Couldn't delete this project. Try again.");
+    }
   }
 
   // "/" opens search, unless the user is typing somewhere
@@ -128,7 +153,32 @@ export function BoardDock({
               currentId={id}
               onImport={() => fileRef.current?.click()}
               onExport={handleExport}
+              onDelete={() => setConfirmDelete(true)}
             />
+
+            <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Delete “{getProjectTitle(doc) ?? "this project"}”?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This removes the project and all its cards from this device. It can't be undone.
+                    Export it first if you want a copy.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    variant="destructive"
+                    disabled={deleting}
+                    onClick={handleDelete}
+                  >
+                    {deleting ? "Deleting…" : "Delete project"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             <span
               role="separator"
@@ -136,7 +186,7 @@ export function BoardDock({
               className="mx-0.5 h-5 w-px bg-border"
             />
 
-            {/* note: a button for add is somewhat redundant but can be useful for phone */}
+            {/* note: this button adds a new task but will prob adapt to add a new col later */}
             {canEdit && (
               <DockTip label="Add card">
                 <Button

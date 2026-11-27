@@ -3,7 +3,7 @@
 import { useId } from "react";
 import { useDroppable } from "@dnd-kit/react";
 import { CollisionPriority } from "@dnd-kit/abstract";
-import { STATUS_LABELS, type Card, type Status } from "@/lib/schema";
+import { type Card, type ColumnId } from "@/lib/schema";
 import { cn } from "@/lib/utils";
 import { Heading } from "@/components/ui/typography";
 import { SortableCard } from "@/components/board/sortable-card";
@@ -13,14 +13,16 @@ import { pointerIntersection } from "@dnd-kit/collision";
 export function BoardColumn({
   status,
   cards,
+  name,
   canEdit,
   highlighted,
   onOpenCard,
   adding,
   onAddingChange,
 }: {
-  status: Status;
+  status: ColumnId;
   cards: Card[];
+  name: string;
   canEdit: boolean;
   highlighted: boolean;
   onOpenCard: (id: string) => void;
@@ -54,7 +56,7 @@ export function BoardColumn({
     >
       <header className="flex items-baseline gap-2 px-2 pt-1 pb-2">
         <Heading as="h2" id={headingId} className="text-sm">
-          {STATUS_LABELS[status]}
+          {name}
         </Heading>
         <span className="text-xs text-muted-foreground" aria-hidden="true">
           {cards.length}

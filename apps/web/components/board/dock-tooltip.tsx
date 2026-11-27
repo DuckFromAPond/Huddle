@@ -4,14 +4,16 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 export function DockTip({
   label,
   shortcut,
+  disabled,
   children,
 }: {
   label: string;
   shortcut?: string;
+  disabled?: boolean;
   children: React.ReactElement;
 }) {
   return (
-    <Tooltip>
+    <Tooltip disabled={disabled}>
       <TooltipTrigger render={children} />
       <TooltipContent side="top" sideOffset={8} className="flex items-center gap-2">
         {label}

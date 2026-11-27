@@ -4,7 +4,8 @@ import { useRef } from "react";
 import { Plus } from "lucide-react";
 import { useCanEdit, useProject } from "@/context/proj-context";
 import { createCard } from "@/lib/doc/cards";
-import { type Status, STATUS_LABELS } from "@/lib/schema";
+import { type ColumnId } from "@/lib/schema";
+import { columnName } from "@/lib/doc/columns";
 import { getIdentity } from "@/lib/identity";
 import { Muted } from "@/components/ui/typography";
 import { Input } from "@/components/ui/input";
@@ -15,7 +16,7 @@ export function AddCard({
   open,
   onOpenChange,
 }: {
-  status: Status;
+  status: ColumnId;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -65,7 +66,7 @@ export function AddCard({
         name="title"
         autoFocus
         autoComplete="off"
-        aria-label={`New card in ${STATUS_LABELS[status]}`}
+        aria-label={`New card in ${columnName(doc, status)}`}
         placeholder="Card title"
         onKeyDown={(e) => {
           if (e.key === "Escape") close();

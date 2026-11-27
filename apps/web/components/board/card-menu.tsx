@@ -3,7 +3,8 @@
 import { ArrowDown, ArrowUp, MoreHorizontal } from "lucide-react";
 import { useCanEdit, useProject } from "@/context/proj-context";
 import { moveCardToColumn, nudgeCard } from "@/lib/doc/cards";
-import { STATUSES, STATUS_LABELS, type Card } from "@/lib/schema";
+import type { Card } from "@/lib/schema";
+import { useColumns } from "@/hooks/use-columns";
 import { getIdentity } from "@/lib/identity";
 import {
   DropdownMenu,
@@ -26,6 +27,7 @@ export function CardMenu({
   isLast: boolean;
 }) {
   const { doc } = useProject();
+  const columns = useColumns();
   const canEdit = useCanEdit();
   if (!canEdit) return null;
 
@@ -68,17 +70,19 @@ export function CardMenu({
 
         <DropdownMenuGroup>
           <DropdownMenuLabel>Move to</DropdownMenuLabel>
-          {STATUSES.filter((s) => s !== card.status).map((s) => (
-            <DropdownMenuItem
-              key={s}
-              onClick={() => (
-                moveCardToColumn(doc, card.id, s, "bottom", getIdentity()),
-                focusCard()
-              )}
-            >
-              {STATUS_LABELS[s]}
-            </DropdownMenuItem>
-          ))}
+          {columns
+            .filter((c) => c.id !== card.status)
+            .map((c) => (
+              <DropdownMenuItem
+                key={c.id}
+                onClick={() => (
+                  moveCardToColumn(doc, card.id, c.id, "bottom", getIdentity()),
+                  focusCard()
+                )}
+              >
+                {c.name}
+              </DropdownMenuItem>
+            ))}
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

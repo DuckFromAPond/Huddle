@@ -4,12 +4,13 @@ import { generateKeyBetween } from "fractional-indexing";
 import { logEvent, newActivityLog } from "@/lib/doc/activity";
 import {
   isPriority,
-  isStatus,
+  type ColumnId,
   type Author,
   type Card,
   type Priority,
-  type Status,
+  MAX_TITLE_LENGTH,
 } from "@/lib/schema";
+import { getColumns, isColumn } from "@/lib/doc/columns";
 
 const KEY_CHARS = /^[0-9A-Za-z]+$/;
 
@@ -45,9 +46,9 @@ function compareCards(a: Card, b: Card): number {
 
 // ---------- Getter/setter ----------
 
-function readCard(id: string, card: Y.Map<unknown>): Card {
+function readCard(doc: Y.Doc, id: string, card: Y.Map<unknown>): Card {
   const description = card.get("description");
-  const status = card.get("status");
+  const status = card.get("status"); // ← keep this: read the raw value first
   const title = card.get("title");
   const priority = card.get("priority");
 
@@ -55,17 +56,18 @@ function readCard(id: string, card: Y.Map<unknown>): Card {
     id,
     title: typeof title === "string" ? title : "",
     description: description instanceof Y.Text ? description.toString() : "",
-    status: isStatus(status) ? status : "todo", // tolerate bad data from a peer
-    priority: isPriority(priority) ? priority : "none", // absent or bad data means none
+    // unknown column (bad data from a peer, or later: a deleted column) → show it in the first one
+    status: isColumn(doc, status) ? status : getColumns(doc)[0].id,
+    priority: isPriority(priority) ? priority : "none",
     order: String(card.get("order") ?? ""),
   };
 }
 
 // All cards, or one column's cards, in display order
-export function getCards(doc: Y.Doc, status?: Status): Card[] {
+export function getCards(doc: Y.Doc, status?: ColumnId): Card[] {
   const cards: Card[] = [];
   cardsMap(doc).forEach((card, id) => {
-    const c = readCard(id, card);
+    const c = readCard(doc, id, card);
 
     if (!status || c.status === status) {
       cards.push(c);
@@ -76,12 +78,12 @@ export function getCards(doc: Y.Doc, status?: Status): Card[] {
 
 export function getCard(doc: Y.Doc, id: string): Card | undefined {
   const card = cardsMap(doc).get(id);
-  return card ? readCard(id, card) : undefined;
+  return card ? readCard(doc, id, card) : undefined;
 }
 
 export function createCard(
   doc: Y.Doc,
-  input: { status: Status; title: string; priority?: Priority; order?: string },
+  input: { status: ColumnId; title: string; priority?: Priority; order?: string },
   by: Author,
   event: "created" | "imported" = "created",
 ): string {
@@ -123,15 +125,16 @@ export function setTitle(doc: Y.Doc, id: string, title: string, by: Author): boo
   const card = cardsMap(doc).get(id);
   if (!card) return false;
 
+  const clean = title.trim().slice(0, MAX_TITLE_LENGTH);
   const old = card.get("title");
-  if (old === title) return true; // same title, so write nothing and log nothing
+  if (old === clean) return true; // same title, so write nothing and log nothing
 
   doc.transact(() => {
-    card.set("title", title);
+    card.set("title", clean);
     logEvent(card, by, {
       type: "renamed",
       from: typeof old === "string" ? old : "",
-      to: title,
+      to: clean,
     });
   });
   return true;
@@ -156,7 +159,7 @@ export function deleteCard(doc: Y.Doc, id: string): boolean {
 export function dropCard(
   doc: Y.Doc,
   cardId: string,
-  status: Status,
+  status: ColumnId,
   columnIds: string[],
   by: Author,
 ) {
@@ -212,7 +215,7 @@ export function dropCard(
  */
 export function orderForIndex(
   doc: Y.Doc,
-  status: Status,
+  status: ColumnId,
   index: number,
   movingId?: string,
 ): string {
@@ -244,7 +247,7 @@ export function orderForIndex(
 export function moveCard(
   doc: Y.Doc,
   id: string,
-  status: Status,
+  status: ColumnId,
   order: string,
   by: Author,
 ): boolean {
@@ -257,7 +260,7 @@ export function moveCard(
     card.set("status", status);
     card.set("order", order);
 
-    if (isStatus(from) && from !== status) {
+    if (typeof from === "string" && from !== status) {
       logEvent(card, by, { type: "status", from, to: status });
     }
   });
@@ -281,7 +284,7 @@ export function nudgeCard(doc: Y.Doc, id: string, step: -1 | 1, by: Author): boo
 export function moveCardToColumn(
   doc: Y.Doc,
   id: string,
-  status: Status,
+  status: ColumnId,
   at: "top" | "bottom",
   by: Author,
 ): boolean {

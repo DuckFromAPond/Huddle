@@ -1,16 +1,15 @@
 import * as Y from "yjs";
 import { createCard, getCards, getDescription } from "@/lib/doc/cards";
 import {
-  isStatus,
+  DEFAULT_COLUMNS,
   isPriority,
-  Status,
-  Priority,
-  Author,
+  type ColumnId,
+  type Priority,
+  type Author,
   SCHEMA_VERSION,
   MAX_IMPORT_CARDS,
+  MAX_TITLE_LENGTH,
 } from "@/lib/schema";
-
-export const MAX_TITLE_LENGTH = 80;
 
 /** meta map has the title and version */
 function metaMap(doc: Y.Doc): Y.Map<unknown> {
@@ -95,7 +94,7 @@ export function setProjectTitle(doc: Y.Doc, title: string): boolean {
 export interface ExportedCard {
   title: string;
   description: string;
-  status: Status;
+  status: ColumnId;
   priority: Priority;
   order: string;
 }
@@ -162,7 +161,10 @@ export function parseImport(raw: unknown): ExportedProject {
     return {
       title: typeof card.title === "string" ? card.title : "",
       description: typeof card.description === "string" ? card.description : "",
-      status: isStatus(card.status) ? card.status : "todo",
+      status:
+        typeof card.status === "string" && DEFAULT_COLUMNS.some((c) => c.id === card.status)
+          ? card.status
+          : DEFAULT_COLUMNS[0].id,
       priority: isPriority(card.priority) ? card.priority : "none",
       order: typeof card.order === "string" ? card.order : "",
     };

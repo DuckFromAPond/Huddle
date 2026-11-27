@@ -23,7 +23,8 @@ import { useCanEdit, useProject } from "@/context/proj-context";
 import { useCards } from "@/hooks/use-card";
 import { usePreferences } from "@/hooks/use-preferences";
 import { dropCard } from "@/lib/doc/cards";
-import { STATUS_LABELS, STATUSES, type Card, type Status } from "@/lib/schema";
+import { type Card, type ColumnId } from "@/lib/schema";
+import { useColumns } from "@/hooks/use-columns";
 import { getIdentity } from "@/lib/identity";
 import { cn } from "@/lib/utils";
 
@@ -34,12 +35,13 @@ import { useCardParam } from "@/hooks/use-card-param";
 import { CardDetail } from "@/components/board/card-detail";
 import { BoardDock } from "@/components/board/board-dock";
 
-type Columns = Record<Status, string[]>;
+type Columns = Record<ColumnId, string[]>;
 
 export function Board() {
   const { doc } = useProject();
   const canEdit = useCanEdit();
   const cards = useCards(doc);
+  const columnList = useColumns();
 
   // map card into a map of id with card
   const cardById = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
@@ -47,13 +49,10 @@ export function Board() {
   // place cards into respective status column
   const docColumns = useMemo(() => {
     // make status to be key of cols object
-    const cols = Object.fromEntries(STATUSES.map((s) => [s, [] as string[]])) as Columns;
-    for (const card of cards) {
-      // cards are already in display order
-      cols[card.status].push(card.id);
-    }
+    const cols = Object.fromEntries(columnList.map((c) => [c.id, [] as string[]])) as Columns;
+    for (const card of cards) cols[card.status]?.push(card.id);
     return cols;
-  }, [cards]);
+  }, [cards, columnList]);
 
   // for react to render preview
   const [preview, setPreview] = useState<Columns | null>(null);
@@ -68,10 +67,10 @@ export function Board() {
   const columns = preview ?? docColumns;
   const dragging = preview !== null;
   const targetColumn =
-    preview && activeId ? STATUSES.find((s) => preview[s].includes(activeId)) : undefined;
+    preview && activeId ? columnList.find((c) => preview[c.id]?.includes(activeId))?.id : undefined;
 
   const prefs = usePreferences();
-  const [addingTo, setAddingTo] = useState<Status | null>(null); /// which column's Add card input is open
+  const [addingTo, setAddingTo] = useState<ColumnId | null>(null); /// which column's Add card input is open
 
   const [query, setQuery] = useState("");
   const cleanQuery = query.trim().toLowerCase();
@@ -85,10 +84,10 @@ export function Board() {
   const { cardId, openCard, closeCard } = useCardParam();
   const openedCard = cardId ? cardById.get(cardId) : undefined;
 
-  const lookup = useRef({ cardById, columns });
+  const lookup = useRef({ cardById, columns, columnList });
 
   useEffect(() => {
-    lookup.current = { cardById, columns };
+    lookup.current = { cardById, columns, columnList };
   });
 
   // Screen-reader announcements use card titles and column names, not random ids.
@@ -97,13 +96,12 @@ export function Board() {
     const titleOf = (id: unknown) => lookup.current.cardById.get(String(id))?.title || "card";
 
     const columnOf = (id: unknown) => {
-      const { columns } = lookup.current;
+      const { columns, columnList } = lookup.current;
 
-      const col = STATUSES.includes(id as Status)
-        ? (id as Status)
-        : STATUSES.find((s) => columns[s].includes(String(id)));
-
-      return col ? STATUS_LABELS[col] : undefined;
+      const col =
+        columnList.find((c) => c.id === id) ?? // over a column itself
+        columnList.find((c) => columns[c.id]?.includes(String(id))); // over a card in it
+      return col?.name;
     };
 
     // configure accessiblity with dnd-dom
@@ -206,7 +204,7 @@ export function Board() {
             const cols = previewRef.current;
             if (!event.canceled && cols && canEdit) {
               const id = String(event.operation.source?.id ?? "");
-              const to = STATUSES.find((s) => cols[s].includes(id));
+              const to = columnList.find((c) => cols[c.id]?.includes(id))?.id;
               if (to) {
                 // writes nothing if unchanged
                 dropCard(doc, id, to, cols[to], getIdentity());
@@ -224,17 +222,18 @@ export function Board() {
               dragging && "snap-none", // never fight dnd-kit's auto-scroll mid-drag
             )}
           >
-            {STATUSES.map((status) => (
+            {columnList.map((col) => (
               <BoardColumn
-                key={status}
-                status={status}
-                cards={columns[status]
+                key={col.id}
+                status={col.id}
+                name={col.name}
+                cards={(columns[col.id] ?? [])
                   .map((id) => cardById.get(id))
                   .filter((c): c is Card => !!c && isVisible(c))}
                 canEdit={canDrag} // no dragging while searching
-                adding={addingTo === status}
-                onAddingChange={(open) => setAddingTo(open ? status : null)}
-                highlighted={targetColumn === status}
+                adding={addingTo === col.id}
+                onAddingChange={(open) => setAddingTo(open ? col.id : null)}
+                highlighted={targetColumn === col.id}
                 onOpenCard={openCard}
               />
             ))}
@@ -244,7 +243,7 @@ export function Board() {
         <CardDetail card={openedCard} onClose={closeCard} />
         <BoardDock
           canEdit={canEdit}
-          onAddCard={() => setAddingTo(STATUSES[0])}
+          onAddCard={() => setAddingTo(columnList[0].id)}
           query={query}
           onQueryChange={setQuery}
           matchCount={matchCount}

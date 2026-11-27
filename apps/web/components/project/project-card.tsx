@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { STATUSES, type Status } from "@/lib/schema";
+import { DEFAULT_COLUMNS, type ColumnId } from "@/lib/schema";
 import type { ProjectSummary } from "@/lib/storage/project-index";
 import { Heading, Text } from "@/components/ui/typography";
 
@@ -16,18 +16,18 @@ function editedAgo(ms: number): string {
 }
 
 /** Tiny board drawn from counts: one column per status, one bar per card (capped). Decorative. */
-function ColumnPreview({ counts }: { counts?: Partial<Record<Status, number>> }) {
+function ColumnPreview({ counts }: { counts?: Partial<Record<ColumnId, number>> }) {
   return (
     <svg
       viewBox="0 0 120 64"
       aria-hidden="true"
       className="block aspect-[15/8] w-full rounded-md bg-muted/40"
     >
-      {STATUSES.map((status, col) => {
+      {DEFAULT_COLUMNS.map(({ id }, col) => {
         const x = 6 + col * 37;
-        const bars = Math.min(counts?.[status] ?? 0, MAX_BARS);
+        const bars = Math.min(counts?.[id] ?? 0, MAX_BARS);
         return (
-          <g key={status}>
+          <g key={id}>
             <rect x={x} y={6} width={34} height={52} rx={4} className="fill-muted" />
             {Array.from({ length: bars }, (_, i) => (
               <rect
@@ -37,7 +37,9 @@ function ColumnPreview({ counts }: { counts?: Partial<Record<Status, number>> })
                 width={28}
                 height={7}
                 rx={2}
-                className={status === "done" ? "fill-primary/50" : "fill-background"}
+                className={
+                  col === DEFAULT_COLUMNS.length - 1 ? "fill-primary/50" : "fill-background"
+                }
               />
             ))}
           </g>
@@ -49,7 +51,9 @@ function ColumnPreview({ counts }: { counts?: Partial<Record<Status, number>> })
 
 export function ProjectCard({ project }: { project: ProjectSummary }) {
   const counts = project.counts;
-  const total = counts ? STATUSES.reduce((n, s) => n + (counts[s] ?? 0), 0) : undefined;
+  const total = counts
+    ? Object.values(counts).reduce<number>((n, v) => n + (v ?? 0), 0)
+    : undefined;
 
   const meta = [
     total !== undefined && `${total} ${total === 1 ? "card" : "cards"}`,

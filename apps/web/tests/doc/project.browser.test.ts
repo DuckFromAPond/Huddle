@@ -10,7 +10,8 @@ import {
 } from "@/lib/storage/project-index";
 import { createProject, deleteProject, importProject, openProject } from "@/lib/storage/projects";
 import { ada } from "@/tests/helpers";
-import { SCHEMA_VERSION, STATUSES } from "@/lib/schema";
+import { SCHEMA_VERSION } from "@/lib/schema";
+import { getColumns } from "@/lib/doc/columns";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const fast = { indexDebounceMs: 0 };
@@ -209,8 +210,8 @@ describe("export and import", () => {
     expect(copy.id).not.toBe(original.id);
     // Compare per status: across statuses the order depends on random card ids.
     const shape = (doc: typeof copy.doc) =>
-      STATUSES.map((status) =>
-        getCards(doc, status).map(({ title, description }) => ({ title, description })),
+      getColumns(doc).map(({ id }) =>
+        getCards(doc, id).map(({ title, description }) => ({ title, description })),
       );
     expect(shape(copy.doc)).toEqual(shape(original.doc));
     expect(getCards(original.doc)).toHaveLength(3);
