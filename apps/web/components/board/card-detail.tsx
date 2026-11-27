@@ -89,8 +89,8 @@ function describe(e: CardEvent, doc: Y.Doc): React.ReactNode {
     case "renamed":
       return (
         <>
-          renamed this card from <span className="text-primary"> "{e.from}" </span> to{" "}
-          <span className="text-primary">“{e.to}”</span>
+          renamed this card from <span className="text-primary"> &quot;{e.from}&quot; </span> to{" "}
+          <span className="text-primary">&quot;{e.to}&quot;</span>
         </>
       );
     case "comment":
@@ -202,7 +202,7 @@ function CardFields({ card, onDeleted }: { card: Card; onDeleted: () => void }) 
       <SheetHeader className="p-0">
         <SheetTitle className="sr-only">Card details</SheetTitle>
         <SheetDescription className="sr-only">
-          Edit the card's title, column, priority and description.
+          Edit the card&apos;s title, column, priority and description.
         </SheetDescription>
         {/* native form: Enter saves, and browsers skip that while an IME is composing */}
         <form

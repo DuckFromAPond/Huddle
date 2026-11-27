@@ -14,6 +14,7 @@ export default function ErrorPage({
   reset: () => void;
 }) {
   useEffect(() => {
+    // eslint-disable-next-line no-console -- log unexpected errors for debugging
     console.error(error); // keep the stack trace for debugging
   }, [error]);
 

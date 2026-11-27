@@ -93,31 +93,25 @@ export function Board() {
   // Screen-reader announcements use card titles and column names, not random ids.
   // They read the latest data through a ref, so the plugin is configured only once.
   const plugins = useMemo(() => {
-    const titleOf = (id: unknown) => lookup.current.cardById.get(String(id))?.title || "card";
+    // titles and column names travel with the dragged/hovered elements (their `data`)
+    const titleOf = (entity?: { data?: Record<string, unknown> } | null) =>
+      String(entity?.data?.title ?? "card");
 
-    const columnOf = (id: unknown) => {
-      const { columns, columnList } = lookup.current;
-
-      const col =
-        columnList.find((c) => c.id === id) ?? // over a column itself
-        columnList.find((c) => columns[c.id]?.includes(String(id))); // over a card in it
-      return col?.name;
-    };
+    const columnOf = (entity?: { data?: Record<string, unknown> } | null) =>
+      entity?.data?.columnName as string | undefined;
 
     // configure accessiblity with dnd-dom
     const accessibility = Accessibility.configure({
       announcements: {
-        dragstart: ({ operation }: DragStartEvent) => `Picked up ${titleOf(operation.source?.id)}.`,
+        dragstart: ({ operation }: DragStartEvent) => `Picked up ${titleOf(operation.source)}.`,
         dragover: ({ operation }: DragOverEvent) => {
-          const col = columnOf(operation.target?.id);
-          return col ? `${titleOf(operation.source?.id)} is over ${col}.` : undefined;
+          const col = columnOf(operation.target);
+          return col ? `${titleOf(operation.source)} is over ${col}.` : undefined;
         },
         dragend: ({ operation, canceled }: DragEndEvent) => {
-          const title = titleOf(operation.source?.id);
-          if (canceled) {
-            return `Cancelled. ${title} went back to where it was.`;
-          }
-          const col = columnOf(operation.target?.id);
+          const title = titleOf(operation.source);
+          if (canceled) return `Cancelled. ${title} went back to where it was.`;
+          const col = columnOf(operation.target);
           return col ? `Dropped ${title} in ${col}.` : `Dropped ${title}.`;
         },
       },

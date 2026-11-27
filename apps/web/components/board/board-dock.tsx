@@ -163,8 +163,8 @@ export function BoardDock({
                     Delete “{getProjectTitle(doc) ?? "this project"}”?
                   </AlertDialogTitle>
                   <AlertDialogDescription>
-                    This removes the project and all its cards from this device. It can't be undone.
-                    Export it first if you want a copy.
+                    This removes the project and all its cards from this device. It can&apos;t be
+                    undone. Export it first if you want a copy.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

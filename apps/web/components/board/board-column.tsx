@@ -37,6 +37,7 @@ export function BoardColumn({
     id: status,
     type: "column",
     accept: "item",
+    data: { columnName: name },
     collisionPriority: CollisionPriority.Low,
     collisionDetector: pointerIntersection, // only when the pointer is inside the column
     disabled: !canEdit,
@@ -72,6 +73,7 @@ export function BoardColumn({
             index={index}
             column={status}
             disabled={!canEdit}
+            columnName={name}
             isLast={index === cards.length - 1}
             onOpen={onOpenCard}
           />

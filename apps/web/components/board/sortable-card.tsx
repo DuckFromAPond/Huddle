@@ -23,6 +23,7 @@ export function SortableCard({
   index,
   column,
   disabled,
+  columnName,
   isLast,
   onOpen,
 }: {
@@ -30,6 +31,7 @@ export function SortableCard({
   index: number;
   column: ColumnId;
   disabled: boolean;
+  columnName: string;
   isLast: boolean;
   onOpen: (id: string) => void;
 }) {
@@ -40,6 +42,7 @@ export function SortableCard({
     group: column,
     type: "item",
     accept: "item",
+    data: { title: card.title || "Untitled", columnName },
     collisionDetector: pointerIntersection,
     disabled,
   });
